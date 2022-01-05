@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "804952325909",
+    "project_id": "mywine-562f9",
+    "storage_bucket": "mywine-562f9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804952325909:android:5e57ab5ea973554d91331c",
+        "android_client_info": {
+          "package_name": "com.example.mywine"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "804952325909-shnkfvbt8ge56fi1ldl9se53rcphq481.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaUMivVzdcsJHg3phVbk81hox-uFY3Sog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "804952325909-shnkfvbt8ge56fi1ldl9se53rcphq481.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
