@@ -107,7 +107,7 @@ public class SignInActivity extends AppCompatActivity {
                             ref.child(uid).setValue(hashMap);
 
                             Toast.makeText(SignInActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(SignInActivity.this, ProfileActivity.class));
+                            startActivity(new Intent(SignInActivity.this, MainActivity.class));
                             finish();
                         } else {
                             Toast.makeText(SignInActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
