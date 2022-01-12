@@ -21,6 +21,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -87,6 +91,21 @@ public class SignInActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             progressDialog.dismiss();
                             FirebaseUser user = mAuth.getCurrentUser();
+
+                            String email = user.getEmail();
+                            String uid = user.getUid();
+                            String name ="";
+                            String img = "";
+                            HashMap<Object, String> hashMap = new HashMap<>();
+                            // TODO: get values from edit profile
+                            hashMap.put("email", email);
+                            hashMap.put("name", name);
+                            hashMap.put("uid", uid);
+                            hashMap.put("image", img);
+                            FirebaseDatabase db = FirebaseDatabase.getInstance();
+                            DatabaseReference ref = db.getReference("Users");
+                            ref.child(uid).setValue(hashMap);
+
                             Toast.makeText(SignInActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(SignInActivity.this, ProfileActivity.class));
                             finish();
