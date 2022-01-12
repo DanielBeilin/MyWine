@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "804952325909-vcmuk2o2h00o2muirsgi81i5hc90eunl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mywine",
+            "certificate_hash": "35d1b50e8e54209801925d4a8843d69cd6408136"
+          }
+        },
+        {
           "client_id": "804952325909-shnkfvbt8ge56fi1ldl9se53rcphq481.apps.googleusercontent.com",
           "client_type": 3
         }
