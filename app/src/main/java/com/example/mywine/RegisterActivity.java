@@ -67,8 +67,8 @@ public class RegisterActivity extends AppCompatActivity {
                     EmailInput.setError("Invalid Email!");
                     EmailInput.setFocusable(true);
                 } else if (password.length() < 6) {
-                    EmailInput.setError("Password length has to be at least 6 characters!");
-                    EmailInput.setFocusable(true);
+                    PasswordInput.setError("Password length has to be at least 6 characters!");
+                    PasswordInput.setFocusable(true);
                 } else {
                     registerUser(email, password);
                 }
