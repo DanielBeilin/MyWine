@@ -17,6 +17,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class ProfileActivity extends AppCompatActivity {
 
+    FirebaseAuth firebaseAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,5 +26,23 @@ public class ProfileActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle("Profile");
+
+        firebaseAuth = FirebaseAuth.getInstance();
+    }
+
+    private void checkUSerStatus() {
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            // TODO: user is already signed in
+        } else {
+            startActivity(new Intent(ProfileActivity.this, SignInActivity.class));
+            finish();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        checkUSerStatus();
+        super.onStart();
     }
 }
