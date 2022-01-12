@@ -20,6 +20,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
     Button RegisterBtn;
@@ -34,7 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.register_activity);
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("Create Account...");
+        actionBar.setTitle("Register");
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
 
@@ -85,9 +89,24 @@ public class RegisterActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             progressDialog.dismiss();
+
                             FirebaseUser user = mAuth.getCurrentUser();
+                            String email = user.getEmail();
+                            String uid = user.getUid();
+                            String name ="";
+                            String img = "";
+                            HashMap<Object, String> hashMap = new HashMap<>();
+                            // TODO: get values from edit profile
+                            hashMap.put("email", email);
+                            hashMap.put("name", name);
+                            hashMap.put("uid", uid);
+                            hashMap.put("image", img);
+                            FirebaseDatabase db = FirebaseDatabase.getInstance();
+                            DatabaseReference ref = db.getReference("Users");
+                            ref.child(uid).setValue(hashMap);
+
                             Toast.makeText(RegisterActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this, ProfileActivity.class));
+                            startActivity(new Intent(RegisterActivity.this, SignInActivity.class));
                             finish();
                         } else {
                             progressDialog.dismiss();
