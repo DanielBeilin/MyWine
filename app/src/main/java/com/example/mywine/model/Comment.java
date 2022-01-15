@@ -4,16 +4,17 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-
 @Entity
-public class User {
-    final public static String COLLECTION_NAME = "users";
+public class Comment {
+
+    final public static String COLLECTION_NAME = "comments";
 
     @PrimaryKey
     @NonNull
     String Uid="";
-    String Fullname="", ProfilePhoto="", email="";
+    String content="";
     Long updateDate = new Long(0);
+    String created_by="";
 
 
 }

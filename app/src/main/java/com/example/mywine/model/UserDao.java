@@ -9,7 +9,7 @@ import androidx.room.Query;
 import java.util.List;
 
 @Dao
-public interface UserDoa {
+public interface UserDao {
 
     @Query("select * from User")
     List<User> getAll();
