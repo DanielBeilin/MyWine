@@ -11,8 +11,17 @@ import java.util.List;
 @Dao
 public interface PostDao {
 
-    @Query("select * from Post")
+    @Query("SELECT * FROM Post")
     List<Post> getAll();
+
+    @Query("SELECT CommentList FROM Post WHERE Uid = :comment_id")
+    List<String> getAllCommentsByPost(String comment_id);
+
+    @Query("SELECT LikedBy FROM Post WHERE Uid = :comment_id")
+    List<String> getAllLikesByPost(String comment_id);
+
+    @Query("SELECT * FROM Post WHERE Uid = :comment_id")
+    Post selectPostById(String comment_id);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(Post... posts);

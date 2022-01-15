@@ -11,8 +11,14 @@ import java.util.List;
 @Dao
 public interface UserDao {
 
-    @Query("select * from User")
+    @Query("SELECT * FROM User")
     List<User> getAll();
+
+    @Query("SELECT * FROM User WHERE email = :email")
+    User selectUserByEmail(String email);
+
+    @Query("SELECT * FROM User WHERE Uid = :user_id")
+    User selectUserById(String user_id);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(User... users);
