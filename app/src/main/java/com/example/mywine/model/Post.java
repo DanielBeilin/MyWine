@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Entity
 public class Post {
@@ -23,6 +24,8 @@ public class Post {
     @PrimaryKey
     @NonNull
     String Uid = "";
+    String title = "";
+    String userId = "";
     String content = "";
     String photoUrl = "";
     Integer likeCount = 0;
@@ -32,13 +35,15 @@ public class Post {
 
     @TypeConverters(Converters.class)
     ArrayList<String> CommentList = new ArrayList<String>();
-    Long updateDate = new Long(0);
+    Long updateDate = 0L;
 
     public Post() {
     }
 
-    public Post(@NonNull String uid, String content, String photoUrl, Integer likeCount, Long updateDate) {
+    public Post(@NonNull String uid,String title, String userId, String content, String photoUrl, Integer likeCount, Long updateDate) {
         Uid = uid;
+        this.userId = userId;
+        this.title = title;
         this.content = content;
         this.photoUrl = photoUrl;
         this.likeCount = likeCount;
@@ -106,6 +111,21 @@ public class Post {
         this.likeCount += 1;
         this.LikedBy.add(userID);
     }
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public void addComment(String commentID) {
         this.CommentList.add(commentID);
@@ -115,6 +135,8 @@ public class Post {
     public Map<String, Object> toJson() {
         Map<String, Object> json = new HashMap<String, Object>();
         json.put("id", Uid);
+        json.put("userId",userId);
+        json.put("title",title);
         json.put("content", content);
         json.put("likeCount", likeCount);
         json.put("updateDate", FieldValue.serverTimestamp());
@@ -126,15 +148,17 @@ public class Post {
 
     public static Post create(Map<String, Object> json) {
         String Uid = (String) json.get("id");
+        String userId = (String) json.get("userId");
+        String title = (String) json.get("title");
         String content = (String) json.get("content");
         Integer likeCount = (Integer) json.get("likeCount");
-        Long updateDate = ((Timestamp) json.get("updateDate")).getSeconds();
+        Long updateDate = ((Timestamp) Objects.requireNonNull(json.get("updateDate"))).getSeconds();
         ArrayList<String> commentList = new ArrayList<String>
-                (Arrays.asList(((String) json.get("commentList")).split(",")));
+                (Arrays.asList(((String) Objects.requireNonNull(json.get("commentList"))).split(",")));
         ArrayList<String> likedBy = new ArrayList<String>
-                (Arrays.asList(((String) json.get("likedBy")).split(",")));
+                (Arrays.asList(((String) Objects.requireNonNull(json.get("likedBy"))).split(",")));
         String photoUrl = (String) json.get("photoUrl");
-        Post post = new Post(Uid, content,photoUrl,likeCount,updateDate);
+        Post post = new Post(Objects.requireNonNull(Uid), title,userId, content,photoUrl,likeCount,updateDate);
         post.setCommentList(commentList);
         post.setLikeCount(likeCount);
         return post;

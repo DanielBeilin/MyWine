@@ -4,11 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity /*implements BottomNavigationView.OnNavigationItemSelectedListener*/ {
 
     BottomNavigationView bottomNavigationView;
 
@@ -18,10 +19,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         setContentView(R.layout.activity_main);
 
 
-        bottomNavigationView = findViewById(R.id.bottom_nav);
+        //bottomNavigationView = findViewById(R.id.bottom_nav);
 
-        bottomNavigationView.setOnNavigationItemSelectedListener(this);
-        bottomNavigationView.setSelectedItemId(R.id.feedFragment);
+        //bottomNavigationView.setOnNavigationItemSelectedListener(this);
+        //bottomNavigationView.setSelectedItemId(R.id.feedFragment);
 
     }
 
@@ -31,24 +32,25 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     ProfileFragment profileFragment = new ProfileFragment();
 
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.feedFragment:
-                getSupportFragmentManager().beginTransaction().replace(R.id.container, feedFragment).commit();
-                return true;
-
-            case R.id.exploreFragment:
-                getSupportFragmentManager().beginTransaction().replace(R.id.container, exploreFragment).commit();
-                return true;
-
-            case R.id.likesFragment:
-                getSupportFragmentManager().beginTransaction().replace(R.id.container, likesFragment).commit();
-                return true;
-            case R.id.profileFragment:
-                getSupportFragmentManager().beginTransaction().replace(R.id.container, profileFragment).commit();
-                return true;
-        }
-        return false;
-    }
+//    @Override
+//    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+//        Log.d("navigation", String.format("id :%s",item.getItemId()));
+//        switch (item.getItemId()) {
+//            case R.id.feedFragment:
+//                getSupportFragmentManager().beginTransaction().replace(R.id.container, feedFragment).commit();
+//                return true;
+//
+//            case R.id.exploreFragment:
+//                getSupportFragmentManager().beginTransaction().replace(R.id.container, exploreFragment).commit();
+//                return true;
+//
+//            case R.id.likesFragment:
+//                getSupportFragmentManager().beginTransaction().replace(R.id.container, likesFragment).commit();
+//                return true;
+//            case R.id.profileFragment:
+//                getSupportFragmentManager().beginTransaction().replace(R.id.container, profileFragment).commit();
+//                return true;
+//        }
+//        return false;
+//    }
 }

@@ -9,6 +9,7 @@ import com.google.firebase.firestore.FieldValue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 
 @Entity
@@ -19,7 +20,7 @@ public class User {
     @NonNull
     String Uid = "";
     String fullName = "", ProfilePhoto = "", email = "";
-    Long updateDate = new Long(0);
+    Long updateDate = 0L;
 
     public User() {
     }
@@ -93,10 +94,9 @@ public class User {
         String Uid = (String) json.get("id");
         String fullName = (String) json.get("name");
         String profilePhoto = (String) json.get("profilePhoto");
-        Long updateDate = ((Timestamp) json.get("updateDate")).getSeconds();
+        Long updateDate = ((Timestamp) Objects.requireNonNull(json.get("updateDate"))).getSeconds();
         String email = (String) json.get("email");
 
-        User user = new User(Uid, fullName, profilePhoto, email, updateDate);
-        return user;
+        return new User(Objects.requireNonNull(Uid), fullName, profilePhoto, email, updateDate);
     }
 }
