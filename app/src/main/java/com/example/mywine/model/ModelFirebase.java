@@ -1,10 +1,12 @@
 package com.example.mywine.model;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import com.example.mywine.model.Comment.Comment;
+import com.example.mywine.model.Post.Post;
+import com.example.mywine.model.User.User;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
@@ -21,7 +23,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.example.mywine.model;
+package com.example.mywine.model.User;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;

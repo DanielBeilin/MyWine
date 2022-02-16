@@ -1,4 +1,4 @@
-package com.example.mywine.model;
+package com.example.mywine.model.Comment;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;

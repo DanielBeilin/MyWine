@@ -10,6 +10,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.mywine.MyApplication;
+import com.example.mywine.model.Comment.Comment;
+import com.example.mywine.model.Post.Post;
+import com.example.mywine.model.User.User;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -60,7 +63,7 @@ public class UserModelStorageFunctions {
 
 
     public void refreshUserList() {
-        userListLoadingState.setValue(UserModelStorageFunctions.UserListLoadingState.loading);
+        userListLoadingState.setValue(UserListLoadingState.loading);
 
         Long lastUpdateDate = MyApplication.getContext()
                 .getSharedPreferences("TAG", Context.MODE_PRIVATE)
@@ -96,7 +99,7 @@ public class UserModelStorageFunctions {
                         //return all data to caller
                         List<User> cmtList = AppLocalDB.db.UserDao().getAll();
                         userList.postValue(cmtList);
-                        userListLoadingState.postValue(UserModelStorageFunctions.UserListLoadingState.loaded);
+                        userListLoadingState.postValue(UserListLoadingState.loaded);
                     }
                 });
             }

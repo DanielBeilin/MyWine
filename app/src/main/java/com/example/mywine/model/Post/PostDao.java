@@ -1,4 +1,4 @@
-package com.example.mywine.model;
+package com.example.mywine.model.Post;
 
 import androidx.room.Dao;
 import androidx.room.Delete;

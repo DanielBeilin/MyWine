@@ -1,4 +1,4 @@
-package com.example.mywine.model;
+package com.example.mywine.model.Comment;
 
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -14,7 +14,7 @@ public interface CommentDao {
     @Query("SELECT * FROM Comment")
     List<Comment> getAll();
 
-    @Query("SELECT * FROM Comment WHERE createdBy = :user_id")
+    @Query("SELECT * FROM Comment WHERE userId = :user_id")
     List<Comment> getCommentsByUser(String user_id);
 
     @Query("SELECT * FROM Comment WHERE Uid = :comment_id")

@@ -1,11 +1,10 @@
-package com.example.mywine.model;
+package com.example.mywine.model.Post;
 
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
@@ -29,11 +28,7 @@ public class Post {
     String content = "";
     String photoUrl = "";
     Integer likeCount = 0;
-
-    @TypeConverters(Converters.class)
     ArrayList<String> LikedBy = new ArrayList<String>();
-
-    @TypeConverters(Converters.class)
     ArrayList<String> CommentList = new ArrayList<String>();
     Long updateDate = 0L;
 

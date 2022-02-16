@@ -14,6 +14,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.example.mywine.MyApplication;
+import com.example.mywine.model.Post.Post;
 
 public class PostModelStorageFunctions {
     public static final PostModelStorageFunctions instance = new PostModelStorageFunctions();

@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.mywine.MyApplication;
+import com.example.mywine.model.Comment.Comment;
 
 import java.util.List;
 import java.util.concurrent.Executor;
