@@ -1,56 +1,80 @@
 package com.example.mywine;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity /*implements BottomNavigationView.OnNavigationItemSelectedListener*/ {
+public class MainActivity extends AppCompatActivity {
 
     BottomNavigationView bottomNavigationView;
+    FirebaseAuth firebaseAuth;
+    ActionBar actionBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        actionBar = getSupportActionBar();
+        actionBar.setTitle("Feed");
 
-        //bottomNavigationView = findViewById(R.id.bottom_nav);
+        firebaseAuth = FirebaseAuth.getInstance();
 
-        //bottomNavigationView.setOnNavigationItemSelectedListener(this);
-        //bottomNavigationView.setSelectedItemId(R.id.feedFragment);
+        bottomNavigationView = findViewById(R.id.bottom_nav);
+        bottomNavigationView.setOnNavigationItemSelectedListener(navListener);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView2, new FeedFragment()).commit();
+
 
     }
 
-    FeedFragment feedFragment = new FeedFragment();
-    ExploreFragment exploreFragment = new ExploreFragment();
-    LikesFragment likesFragment = new LikesFragment();
-    ProfileFragment profileFragment = new ProfileFragment();
+    private BottomNavigationView.OnNavigationItemSelectedListener navListener =
+            new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+                public boolean onNavigationItemSelected(@NonNull MenuItem item){
+                Fragment selectedFragment = null;
 
+                switch (item.getItemId()) {
+                    case R.id.feedFragment:
+                        selectedFragment = new FeedFragment();
+                        actionBar.setTitle("Feed");
+                        break;
+                    case R.id.exploreFragment:
+                        selectedFragment = new ExploreFragment();
+                        actionBar.setTitle("Explore");
+                        break;
+                    case R.id.likesFragment:
+                        selectedFragment = new LikesFragment();
+                        actionBar.setTitle("Likes");
+                        break;
+                    case R.id.profileFragment:
+                        selectedFragment = new ProfileFragment();
+                        actionBar.setTitle("Profile");
+                        break;
 
-//    @Override
-//    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//        Log.d("navigation", String.format("id :%s",item.getItemId()));
-//        switch (item.getItemId()) {
-//            case R.id.feedFragment:
-//                getSupportFragmentManager().beginTransaction().replace(R.id.container, feedFragment).commit();
-//                return true;
-//
-//            case R.id.exploreFragment:
-//                getSupportFragmentManager().beginTransaction().replace(R.id.container, exploreFragment).commit();
-//                return true;
-//
-//            case R.id.likesFragment:
-//                getSupportFragmentManager().beginTransaction().replace(R.id.container, likesFragment).commit();
-//                return true;
-//            case R.id.profileFragment:
-//                getSupportFragmentManager().beginTransaction().replace(R.id.container, profileFragment).commit();
-//                return true;
-//        }
-//        return false;
-//    }
+                }
+
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView2, selectedFragment).commit();
+                return true;
+                }
+            };
+
+    private void checkUSerStatus() {
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            // TODO: user is already signed in
+        } else {
+            startActivity(new Intent(MainActivity.this, SignInActivity.class));
+            finish();
+        }
+    }
 }

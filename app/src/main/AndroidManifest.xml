@@ -3,6 +3,8 @@
     package="com.example.mywine">
     <!--internet premissions-->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="" />
     <application
         android:allowBackup="true"
@@ -13,8 +15,8 @@
         android:theme="@style/Theme.MyWine">
         <activity android:name=".ProfileActivity" />
         <activity android:name=".RegisterActivity"/>
-        <activity android:name=".SignInActivity"/>
-        <activity android:name=".MainActivity" android:exported="true">
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".SignInActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
