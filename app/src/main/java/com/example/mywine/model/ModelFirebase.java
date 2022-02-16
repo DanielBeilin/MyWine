@@ -249,4 +249,8 @@ public class ModelFirebase {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         return (currentUser != null);
     }
+
+    public FirebaseUser getLoggedInUser() {
+        return (mAuth.getCurrentUser());
+    }
 }
