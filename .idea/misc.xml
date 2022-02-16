@@ -3,16 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/drawable-anydpi/ic_add_photo.xml" value="0.215625" />
-        <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/drawable/buttonstyle.xml" value="0.215625" />
-        <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/drawable/gradientbackground.xml" value="0.215625" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/drawable/ic_explore.xml" value="0.221875" />
-        <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/drawable/profile_circular_border_imageview.xml" value="0.2015625" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/activity_main.xml" value="0.20625" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/feed_fragment.xml" value="0.20572916666666666" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/fragment_explore.xml" value="0.20572916666666666" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/fragment_likes.xml" value="0.20572916666666666" />
-        <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/fragment_login.xml" value="0.19947916666666668" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/fragment_post.xml" value="0.20572916666666666" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/fragment_profile.xml" value="0.20625" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/profile_activity.xml" value="0.13333333333333333" />
@@ -20,6 +15,11 @@
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/sign_in_activity.xml" value="0.3333333333333333" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/menu/bottom_menu.xml" value="0.20572916666666666" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/menu/menu_main.xml" value="0.2677083333333333" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/activity_main.xml" value="0.16767983789260385" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/feed_fragment.xml" value="0.2540526849037487" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_add_post.xml" value="0.22416413373860183" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_likes.xml" value="0.22416413373860183" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_profile.xml" value="0.2749094202898551" />
       </map>
     </option>
   </component>
