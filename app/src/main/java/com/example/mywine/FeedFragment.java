@@ -20,13 +20,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.mywine.model.ModelFirebase;
 import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.PostModelStorageFunctions;
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.UserModelStorageFunctions;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 public class FeedFragment extends Fragment {
@@ -34,6 +38,7 @@ public class FeedFragment extends Fragment {
     PostListRvViewModel PostViewModel;
     FeedAdapter feedAdapter;
     SwipeRefreshLayout swipeRefresh;
+    FirebaseUser user;
 
     public static FeedFragment newInstance() {
         return new FeedFragment();
@@ -49,8 +54,8 @@ public class FeedFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        user = UserModelStorageFunctions.instance.getLoggedInUser();
         View view = inflater.inflate(R.layout.feed_fragment,container,false);
-
         swipeRefresh = view.findViewById(R.id.feedFragment_swiperefresh);
         swipeRefresh.setOnRefreshListener(PostModelStorageFunctions.instance::refreshPostList);
 
@@ -87,6 +92,8 @@ public class FeedFragment extends Fragment {
         TextView contentTv;
         TextView likeCountTv;
         TextView authorTv;
+        TextView commentCountTv;
+        Button likeBtn;
 
         public FeedViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
@@ -95,14 +102,18 @@ public class FeedFragment extends Fragment {
             likeCountTv = itemView.findViewById(R.id.post_row_like_count_tv);
             authorTv = itemView.findViewById(R.id.post_row_name_tv);
             userImv = itemView.findViewById(R.id.post_row_user_imgv);
+            commentCountTv = itemView.findViewById(R.id.post_comments_count_tv);
+            likeBtn = itemView.findViewById(R.id.post_row_like_btn);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int pos = getAdapterPosition();
                     listener.onItemClick(v,pos);
+
                 }
             });
+
         }
 
         void bind(Post post){
@@ -120,12 +131,23 @@ public class FeedFragment extends Fragment {
                 }
             });
             likeCountTv.setText(post.getLikeCount());
+            commentCountTv.setText(post.getCommentList().size());
             postImv.setImageResource(R.drawable.avatar);
             if (post.getPhotoUrl() != null) {
                 Picasso.get()
                         .load(post.getPhotoUrl())
                         .into(postImv);
             }
+
+            likeBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    post.addLike(user.getUid());
+                    likeCountTv.setText(post.getLikeCount());
+                }
+            });
+
+
         }
 
     }

@@ -13,6 +13,7 @@ import com.example.mywine.MyApplication;
 import com.example.mywine.model.Comment.Comment;
 import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.User.User;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -127,4 +128,12 @@ public class UserModelStorageFunctions {
         });
     }
 
+
+    public boolean isSignedIn() {
+        return modelFirebase.isSignedIn();
+    }
+
+    public FirebaseUser getLoggedInUser() {
+        return (modelFirebase.getLoggedInUser());
+    }
 }
