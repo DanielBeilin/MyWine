@@ -52,14 +52,34 @@ public class UserModelStorageFunctions {
         return userList;
     }
 
-    public interface  GetUserById {
+    public interface GetUserById {
         void onComplete(User user);
     }
 
-    public Post getPostById(String userId, UserModelStorageFunctions.GetUserById listener) {
+    public interface GetNameByUserId {
+        void onComplete(String userName);
+    }
+
+    public String getNameByUserId(String userId, UserModelStorageFunctions.GetNameByUserId listener) {
+        modelFirebase.getUserNameById(userId,listener);
+        return null;
+    }
+    public User getUserById(String userId,UserModelStorageFunctions.GetUserById listener) {
         modelFirebase.getUserById(userId,listener);
         return null;
     }
+
+    public interface addUserListener {
+        void onComplete();
+    }
+
+    public void addUser(User user, PostModelStorageFunctions.addPostListener listener ){
+        modelFirebase.addUser(user, () -> {
+            listener.onComplete();
+            refreshUserList();
+        });
+    }
+
 
 
     public void refreshUserList() {

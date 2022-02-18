@@ -15,11 +15,19 @@
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/sign_in_activity.xml" value="0.3333333333333333" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/menu/bottom_menu.xml" value="0.20572916666666666" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/menu/menu_main.xml" value="0.2677083333333333" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/drawable/add_comment_bg.xml" value="0.3614583333333333" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/drawable/buttonstyle.xml" value="0.3614583333333333" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/drawable/like_background.xml" value="0.3614583333333333" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/drawable/like_foreground.xml" value="0.3614583333333333" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/activity_main.xml" value="0.16767983789260385" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/feed_fragment.xml" value="0.2540526849037487" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_add_post.xml" value="0.22416413373860183" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_likes.xml" value="0.22416413373860183" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_profile.xml" value="0.2749094202898551" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/post_list_row.xml" value="0.42108546475358705" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/menu/bottom_menu.xml" value="0.3453125" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/menu/menu_main.xml" value="0.3453125" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/menu/post_list_menu.xml" value="0.3453125" />
       </map>
     </option>
   </component>
