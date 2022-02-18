@@ -109,9 +109,15 @@ public class Post {
     }
 
     public void addLike(String userID) {
-        this.likeCount += 1;
-        this.LikedBy.add(userID);
+        if(LikedBy.contains(userID)) {
+            this.likeCount -= 1;
+            this.LikedBy.remove(userID);
+        } else {
+            this.likeCount += 1;
+            this.LikedBy.add(userID);
+        }
     }
+
     public String getTitle() {
         return title;
     }
