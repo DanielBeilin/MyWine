@@ -132,6 +132,23 @@ public class ModelFirebase {
                 });
     }
 
+    public void getUserNameById(String userId, UserModelStorageFunctions.GetNameByUserId listener) {
+        db.collection(User.COLLECTION_NAME)
+                .document(userId)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        User user = null;
+                        String userName = "";
+                        if(task.isSuccessful() & task.getResult() != null){
+                            user = User.create(Objects.requireNonNull(task.getResult().getData()));
+                            userName = user.getFullName();
+                        }
+                        listener.onComplete(userName);
+                    }
+                });
+    }
     public void getCommentById(String commentId, CommentModelStorageFunctions.GetCommentById listener) {
         db.collection(Comment.COLLECTION_NAME)
                 .document(commentId)
@@ -185,39 +202,31 @@ public class ModelFirebase {
                 }
             });
     }
+    public void addUser(User user, UserModelStorageFunctions.addUserListener listener) {
+        Map<String, Object> json = user.toJson();
+        db.collection(Post.COLLECTION_NAME)
+                .document(user.getUid())
+                .set(json)
+                .addOnSuccessListener(unused -> listener.onComplete())
+                .addOnFailureListener(e -> listener.onComplete());
+    }
 
     public void addPost(Post post, PostModelStorageFunctions.addPostListener listener) {
         Map<String, Object> json = post.toJson();
         db.collection(Post.COLLECTION_NAME)
                 .document(post.getUid())
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        Post post = null;
-                        if(task.isSuccessful() & task.getResult() != null) {
-                            post = Post.create(task.getResult().getData());
-                        }
-                        listener.onComplete();
-                    }
-                });
+                .set(json)
+                .addOnSuccessListener(unused -> listener.onComplete())
+                .addOnFailureListener(e -> listener.onComplete());
     }
 
     public void addComment(Comment comment, CommentModelStorageFunctions.addCommentListener listener) {
         Map<String, Object> json = comment.toJson();
         db.collection(Post.COLLECTION_NAME)
                 .document(comment.getUid())
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        Comment comment = null;
-                        if(task.isSuccessful() & task.getResult() != null) {
-                            comment = Comment.create(task.getResult().getData());
-                        }
-                        listener.onComplete();
-                    }
-                });
+                .set(json)
+                .addOnSuccessListener(unused -> listener.onComplete())
+                .addOnFailureListener(e -> listener.onComplete());
     }
 
 
