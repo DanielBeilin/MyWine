@@ -1,31 +1,23 @@
 package com.example.mywine;
 
-import android.Manifest;
+import static com.example.mywine.model.PicturePickDialog.IMAGE_PICK_CAMERA_REQUEST_CODE;
+import static com.example.mywine.model.PicturePickDialog.IMAGE_PICK_GALLERY_REQUEST_CODE;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.shapes.PathShape;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.PackageManagerCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -34,7 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.mywine.model.User;
+import com.example.mywine.model.PicturePickDialog;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -49,15 +41,12 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.StorageTaskScheduler;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
-import java.lang.reflect.Field;
-import java.security.Key;
 import java.util.HashMap;
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements PicturePickDialog.NoticeDialogListener {
 
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
@@ -71,14 +60,6 @@ public class ProfileFragment extends Fragment {
     TextView nameTv, emailTv;
     FloatingActionButton fab;
     ProgressDialog pd;
-    
-    private static final int CAMERA_REQUEST_CODE = 100;
-    private static final int STORAGE_REQUEST_CODE = 200;
-    private static final int IMAGE_PICK_GALLERY_REQUEST_CODE = 300;
-    private static final int IMAGE_PICK_CAMERA_REQUEST_CODE = 400;
-
-    String cameraPermissions[];
-    String storagePermissions[];
     Uri image_uri;
 
     @Override
@@ -94,9 +75,6 @@ public class ProfileFragment extends Fragment {
         databaseReference = firebaseDatabase.getReference("Users");
         firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference();
-
-        cameraPermissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        storagePermissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         avatarIv = view.findViewById(R.id.user_profile_photo);
         nameTv = view.findViewById(R.id.tvName);
@@ -118,8 +96,7 @@ public class ProfileFragment extends Fragment {
 
                     try {
                         Picasso.get().load(image).into(avatarIv);
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         Picasso.get().load(R.drawable.ic_add_photo).into(avatarIv);
                     }
 
@@ -142,24 +119,6 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
-    private void requestStoragePermissions() {
-        requestPermissions(storagePermissions, STORAGE_REQUEST_CODE);
-    }
-
-    private boolean checkStoragePermissions() {
-        return ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == (PackageManager.PERMISSION_GRANTED);
-    }
-
-    private void requestCameraPermissions() {
-        requestPermissions(cameraPermissions, CAMERA_REQUEST_CODE);
-    }
-
-    private boolean checkCameraPermissions() {
-        return ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == (PackageManager.PERMISSION_GRANTED) && checkStoragePermissions();
-    }
-
     private void showEditProfileDialog() {
         String options[] = {"edit name", "edit profile photo"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -174,11 +133,17 @@ public class ProfileFragment extends Fragment {
                 } else if (which == 1) {
                     // edit profile photo
                     pd.setMessage("updating profile picture");
-                    showImagePicDialog();
+                    showPicturePickDialog();
                 }
             }
         });
         builder.create().show();
+    }
+
+    public void showPicturePickDialog() {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment PicturePickDialog = new PicturePickDialog();
+        PicturePickDialog.show(getActivity().getSupportFragmentManager(), "PicturePickDialogFragment");
     }
 
     private void showFieldUpdateDialog(String field) {
@@ -233,69 +198,7 @@ public class ProfileFragment extends Fragment {
         builder.create().show();
     }
 
-    private void showImagePicDialog() {
-        String options[] = {"Camera", "Gallery"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Pick Image From");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    // camera clicked
-                    if (!checkCameraPermissions()) {
-                        requestCameraPermissions();
-                    } else {
-                        pickFromCamera();
-                    }
-                } else if (which == 1) {
-                    // gallery clicked
-                    if (!checkStoragePermissions()) {
-                        requestStoragePermissions();
-                    } else {
-                        pickFromGallery();
-                    }
-                }
-            }
-        });
-        builder.create().show();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case CAMERA_REQUEST_CODE: {
-                if (grantResults.length > 0) {
-                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    boolean writeStorageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-
-                    if (cameraAccepted && writeStorageAccepted) {
-                        pickFromCamera();
-                    }
-                    else {
-                        Toast.makeText(getActivity(), "Enable camera and storage permissions", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-            break;
-            case STORAGE_REQUEST_CODE: {
-                if (grantResults.length > 0) {
-                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    boolean writeStorageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-
-                    if (cameraAccepted && writeStorageAccepted) {
-                        pickFromGallery();
-                    }
-                    else {
-                        Toast.makeText(getActivity(), "Enable storage permissions", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-            break;
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void OnDialogResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE) {
                 image_uri = data.getData();
@@ -305,18 +208,17 @@ public class ProfileFragment extends Fragment {
                 uploadProfilePic(image_uri);
             }
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void uploadProfilePic(Uri uri) {
         pd.show();
-        String filePath = storagePath+"_"+firebaseUser.getUid();
+        String filePath = storagePath + "_" + firebaseUser.getUid();
         StorageReference storageReference2 = storageReference.child(filePath);
         storageReference2.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                while (!uriTask.isSuccessful());
+                while (!uriTask.isSuccessful()) ;
                 Uri downloadUri = uriTask.getResult();
 
                 if (uriTask.isSuccessful()) {
@@ -350,21 +252,16 @@ public class ProfileFragment extends Fragment {
 
     }
 
-    private void pickFromGallery() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
-        galleryIntent.setType("image/*");
-        startActivityForResult(galleryIntent, IMAGE_PICK_GALLERY_REQUEST_CODE);
-    }
-
-    private void pickFromCamera() {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "Temp Pic");
-        values.put(MediaStore.Images.Media.DESCRIPTION, "Temp Description");
-
-        image_uri = getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri);
-        startActivityForResult(cameraIntent, IMAGE_PICK_CAMERA_REQUEST_CODE);
-
+    @Override
+    public void onDialogPickCompleted(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE) {
+                image_uri = data.getData();
+                uploadProfilePic(image_uri);
+            }
+            if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE) {
+                uploadProfilePic(image_uri);
+            }
+        }
     }
 }

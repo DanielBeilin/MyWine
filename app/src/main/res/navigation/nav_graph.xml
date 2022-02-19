@@ -20,6 +20,15 @@
             app:argType="string" />
     </fragment>
     <fragment
+        android:id="@+id/addPostFragment"
+        android:name="com.example.mywine.ProfileFragment"
+        android:label="fragment_add_post"
+        tools:layout="@layout/fragment_add_post" >
+        <argument
+            android:name="user_id"
+            app:argType="string" />
+    </fragment>
+    <fragment
         android:id="@+id/likesFragment"
         android:name="com.example.mywine.LikesFragment"
         android:label="fragment_likes"
