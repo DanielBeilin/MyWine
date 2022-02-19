@@ -10,37 +10,35 @@ import com.google.firebase.firestore.FieldValue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 public class Comment {
 
     final public static String COLLECTION_NAME = "comments";
 
-    @PrimaryKey
-    @NonNull
-    String Uid="";
     String content="";
     Long updateDate = 0L;
     String userId ="";
+    String postId ="";
+    @PrimaryKey
+    @NonNull
+    String Uid = "";
 
 
-    public Comment(@NonNull String uid, String content, Long updateDate, String userId, String postId) {
-        Uid = uid;
+    public Comment(String content, String userId, String postId) {
         this.content = content;
-        this.updateDate = updateDate;
         this.userId = userId;
         this.postId = postId;
+        this.Uid = UUID.randomUUID().toString();
     }
 
-    @NonNull
-    public String getUid() {
-        return Uid;
-    }
+    public String getUid() {return this.Uid;}
+
 
     public void setUid(@NonNull String uid) {
         Uid = uid;
     }
-
     public String getContent() {
         return content;
     }
@@ -73,13 +71,12 @@ public class Comment {
         this.postId = postId;
     }
 
-    String postId = "";
     public Comment() {
     }
 
     public Map<String, Object> toJson() {
         Map<String, Object> json = new HashMap<String, Object>();
-        json.put("id", Uid);
+        json.put("commentId", Uid);
         json.put("content", content);
         json.put("userId", userId);
         json.put("postId", userId);
@@ -88,13 +85,13 @@ public class Comment {
     }
 
     public static Comment create(Map<String, Object> json) {
-        String Uid = (String) json.get("id");
         String content = (String) json.get("content");
         Long updateDate = ((Timestamp) Objects.requireNonNull(json.get("updateDate"))).getSeconds();
         String userId = (String) json.get("userId");
         String postId = (String) json.get("postId");
-
-        return new Comment(Uid, content,updateDate,userId,postId);
+        Comment comment = new Comment(content,userId,postId);
+        comment.setUpdateDate(updateDate);
+        return comment;
     }
 
 }

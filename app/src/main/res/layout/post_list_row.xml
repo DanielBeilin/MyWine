@@ -129,7 +129,7 @@
         </androidx.recyclerview.widget.RecyclerView>
 
         <EditText
-            android:id="@+id/post_row_add_comment"
+            android:id="@+id/post_row_add_comment_eb"
             android:layout_width="342dp"
             android:layout_height="31dp"
             android:layout_marginStart="69dp"
@@ -151,13 +151,13 @@
             app:layout_constraintVertical_bias="0.0" />
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/post_row_send_comment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
-            app:layout_constraintBottom_toBottomOf="@+id/post_row_add_comment"
-            app:layout_constraintEnd_toEndOf="@+id/post_row_add_comment"
-            app:layout_constraintTop_toTopOf="@+id/post_row_add_comment"
+            app:layout_constraintBottom_toBottomOf="@+id/post_row_add_comment_eb"
+            app:layout_constraintEnd_toEndOf="@+id/post_row_add_comment_eb"
+            app:layout_constraintTop_toTopOf="@+id/post_row_add_comment_eb"
             app:layout_constraintVertical_bias="0.0"
             app:srcCompat="@android:drawable/ic_menu_send" />
 

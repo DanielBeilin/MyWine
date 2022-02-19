@@ -213,8 +213,7 @@ public class ModelFirebase {
 
     public void addPost(Post post, PostModelStorageFunctions.addPostListener listener) {
         Map<String, Object> json = post.toJson();
-        db.collection(Post.COLLECTION_NAME)
-                .document(post.getUid())
+        db.collection(Post.COLLECTION_NAME).document(post.getUid())
                 .set(json)
                 .addOnSuccessListener(unused -> listener.onComplete())
                 .addOnFailureListener(e -> listener.onComplete());
@@ -223,8 +222,9 @@ public class ModelFirebase {
     public void addComment(Comment comment, CommentModelStorageFunctions.addCommentListener listener) {
         Map<String, Object> json = comment.toJson();
         db.collection(Post.COLLECTION_NAME)
-                .document(comment.getUid())
-                .set(json)
+                .document(comment.getPostId())
+                .collection(Comment.COLLECTION_NAME)
+                .document(comment.getUid()).set(json)
                 .addOnSuccessListener(unused -> listener.onComplete())
                 .addOnFailureListener(e -> listener.onComplete());
     }
