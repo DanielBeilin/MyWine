@@ -2,35 +2,274 @@ package com.example.mywine;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.mywine.model.Comment.Comment;
+import com.example.mywine.model.CommentModelStorageFunctions;
+import com.example.mywine.model.ModelFirebase;
+import com.example.mywine.model.Post.Post;
+import com.example.mywine.model.PostModelStorageFunctions;
+import com.example.mywine.model.User.User;
+import com.example.mywine.model.UserModelStorageFunctions;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.type.TimeOfDayOrBuilder;
+import com.squareup.picasso.Picasso;
 
 public class FeedFragment extends Fragment {
 
-    private FeedViewModel mViewModel;
+    PostListRvViewModel PostViewModel;
+    CommentListRvViewModel CommentViewModel;
+    FeedAdapter feedAdapter;
+    SwipeRefreshLayout swipeRefresh;
+    FirebaseUser user;
 
     public static FeedFragment newInstance() {
         return new FeedFragment();
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.feed_fragment, container, false);
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        PostViewModel = new ViewModelProvider(this).get(PostListRvViewModel.class);
     }
 
+    @Nullable
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(FeedViewModel.class);
-        // TODO: Use the ViewModel
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        user = UserModelStorageFunctions.instance.getLoggedInUser();
+        View view = inflater.inflate(R.layout.feed_fragment,container,false);
+        swipeRefresh = view.findViewById(R.id.feedFragment_swiperefresh);
+        swipeRefresh.setOnRefreshListener(PostModelStorageFunctions.instance::refreshPostList);
+
+        RecyclerView list = view.findViewById(R.id.postlist_rv);
+        list.setHasFixedSize(true);
+
+        list.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        feedAdapter = new FeedAdapter();
+        list.setAdapter(feedAdapter);
+
+        setHasOptionsMenu(true);
+        PostViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
+        swipeRefresh.setRefreshing(PostModelStorageFunctions.instance.getPostListLoadingState().getValue() == PostModelStorageFunctions.PostListLoadingState.loading);
+        PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), postListLoadingState -> {
+            if (postListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
+                swipeRefresh.setRefreshing(true);
+            }else{
+                swipeRefresh.setRefreshing(false);
+            }
+
+        });
+        return view;
+
+    }
+
+    private void refresh() {
+        //FeedAdapter.notifyDataSetChange();
+    }
+
+    class FeedViewHolder extends RecyclerView.ViewHolder{
+        ImageView postImv;
+        ImageView userImv;
+        ImageView sendPostImv;
+        TextView contentTv;
+        TextView likeCountTv;
+        TextView authorTv;
+        TextView commentCountTv;
+        Button likeBtn;
+        EditText newCommentEt;
+
+        public FeedViewHolder(@NonNull View itemView, OnItemClickListener listener) {
+            super(itemView);
+            postImv = itemView.findViewById(R.id.post_row_post_imgv);
+            contentTv = itemView.findViewById(R.id.post_row_content_tv);
+            likeCountTv = itemView.findViewById(R.id.post_row_like_count_tv);
+            authorTv = itemView.findViewById(R.id.post_row_name_tv);
+            userImv = itemView.findViewById(R.id.post_row_user_imgv);
+            commentCountTv = itemView.findViewById(R.id.post_comments_count_tv);
+            likeBtn = itemView.findViewById(R.id.post_row_like_btn);
+            sendPostImv = itemView.findViewById(R.id.post_row_send_comment);
+            newCommentEt = itemView.findViewById(R.id.post_row_add_comment_eb);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int pos = getAdapterPosition();
+                    listener.onItemClick(v,pos);
+
+                }
+            });
+
+        }
+
+        void bind(Post post){
+            contentTv.setText(post.getContent());
+            UserModelStorageFunctions.instance.getUserById(post.getUserId(), new UserModelStorageFunctions.GetUserById() {
+                @Override
+                public void onComplete(User user) {
+                    authorTv.setText(user.getFullName());
+                    userImv.setImageResource(R.drawable.avatar);
+                    if (user.getProfilePhoto() != null) {
+                        Picasso.get()
+                                .load(user.getProfilePhoto())
+                                .into(userImv);
+                    }
+                }
+            });
+            likeCountTv.setText(post.getLikeCount());
+            commentCountTv.setText(post.getCommentList().size());
+            postImv.setImageResource(R.drawable.avatar);
+            if (post.getPhotoUrl() != null) {
+                Picasso.get()
+                        .load(post.getPhotoUrl())
+                        .into(postImv);
+            }
+
+            likeBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    post.addLike(user.getUid());
+                    likeCountTv.setText(post.getLikeCount());
+                }
+            });
+            sendPostImv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String newComment = newCommentEt.getText().toString();
+                    if(newComment.isEmpty()) {
+                        Toast.makeText(getContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Comment comment = new Comment(newComment,user.getUid(),post.getUid());
+                        CommentModelStorageFunctions.instance.addComment(comment,() ->{
+                            //TODO
+                        });
+                        commentCountTv.setText(post.getCommentList().size());
+                    }
+                }
+            });
+
+        }
+
+    }
+
+    class PostViewHolder extends RecyclerView.ViewHolder {
+        TextView userTv;
+        TextView contentTv;
+
+        public PostViewHolder(@NonNull View itemView, FeedFragment.OnItemClickListener listener) {
+            super(itemView);
+            userTv = itemView.findViewById(R.id.comment_row_username_tv);
+            contentTv = itemView.findViewById(R.id.comment_row_content_tv);
+        }
+
+        void bind(Comment comment){
+            contentTv.setText(comment.getContent());
+            UserModelStorageFunctions.instance.getNameByUserId(comment.getUserId(), new UserModelStorageFunctions.GetNameByUserId() {
+                @Override
+                public void onComplete(String userName) {
+                    userTv.setText(userName);
+                }
+            });
+
+        }
+    }
+
+    interface OnItemClickListener{
+        void onItemClick(View v,int position);
+    }
+
+    class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder>{
+
+        OnItemClickListener listener;
+        public void setOnItemClickListener(OnItemClickListener listener) {
+            this.listener = listener;
+        }
+
+
+        @NonNull
+        @Override
+        public FeedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = getLayoutInflater().inflate(R.layout.post_list_row,parent,false);
+            return new FeedViewHolder(view,listener);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull FeedViewHolder holder, int position) {
+            holder.bind(PostViewModel.getData().getValue().get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            if(PostViewModel.getData().getValue() == null) {
+                return 0;
+            }
+            return PostViewModel.getData().getValue().size();
+        }
+    }
+    class PostAdapter extends RecyclerView.Adapter<PostViewHolder>{
+
+        OnItemClickListener listener;
+        public void setOnItemClickListener(OnItemClickListener listener) {
+            this.listener = listener;
+        }
+        @NonNull
+        @Override
+        public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = getLayoutInflater().inflate(R.layout.comment_list_row,parent,false);
+            return new FeedFragment.PostViewHolder(view,listener);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull FeedFragment.PostViewHolder holder, int position) {
+            holder.bind(CommentViewModel.getData().getValue().get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            if(PostViewModel.getData().getValue() == null) {
+                return 0;
+            }
+            return PostViewModel.getData().getValue().size();
+        }
+
+    }
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.post_list_menu,menu);
+    }
+
+    // TODO: Check if correct
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.addPost){
+            Log.d("TAG","ADD...");
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
 }
