@@ -79,7 +79,7 @@ public class Comment {
         json.put("commentId", Uid);
         json.put("content", content);
         json.put("userId", userId);
-        json.put("postId", userId);
+        json.put("postId", postId);
         json.put("updateDate", FieldValue.serverTimestamp());
         return json;
     }

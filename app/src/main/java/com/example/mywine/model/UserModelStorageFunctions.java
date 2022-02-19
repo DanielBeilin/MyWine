@@ -74,7 +74,7 @@ public class UserModelStorageFunctions {
         void onComplete();
     }
 
-    public void addUser(User user, PostModelStorageFunctions.addPostListener listener ){
+    public void addUser(User user, UserModelStorageFunctions.addUserListener listener ){
         modelFirebase.addUser(user, () -> {
             listener.onComplete();
             refreshUserList();
@@ -136,4 +136,5 @@ public class UserModelStorageFunctions {
     public FirebaseUser getLoggedInUser() {
         return (modelFirebase.getLoggedInUser());
     }
+    public void signUserOut() { modelFirebase.signUserOut();}
 }

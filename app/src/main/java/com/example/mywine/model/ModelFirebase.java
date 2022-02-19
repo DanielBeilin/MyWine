@@ -53,19 +53,22 @@ public class ModelFirebase {
     }
 
     public void getAllPosts(Long lastUpdateDate, getAllPostsListener listener){
-        db.collection(Post.COLLECTION_NAME)
-                .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
+        db.collection("Posts")
+                //.whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
                 .get()
-                .addOnCompleteListener(task -> {
-                    List<Post> list = new LinkedList<Post>();
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot doc : task.getResult()){
-                            Post post = Post.create(doc.getData());
-                            list.add(post);
-                        }
-                    }
-                    listener.onComplete(list);
-                });
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                       @Override
+                       public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                           List<Post> list = new LinkedList<Post>();
+                           if (task.isSuccessful()) {
+                               for (QueryDocumentSnapshot doc : task.getResult()) {
+                                   Post post = Post.create(doc.getData());
+                                   list.add(post);
+                               }
+                           }
+                           listener.onComplete(list);
+                       }
+                   });
     }
 
     public void getAllUsers(Long lastUpdateDate, getAllUsersListener listener){
@@ -262,4 +265,6 @@ public class ModelFirebase {
     public FirebaseUser getLoggedInUser() {
         return (mAuth.getCurrentUser());
     }
+
+    public void signUserOut() { mAuth.signOut(); }
 }
