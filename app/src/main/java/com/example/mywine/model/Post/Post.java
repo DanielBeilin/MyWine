@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 public class Post {
@@ -41,14 +42,17 @@ public class Post {
     public Post() {
     }
 
-    public Post(@NonNull String uid,String title, String userId, String content, String photoUrl, Integer likeCount, Long updateDate) {
-        Uid = uid;
+    public Post(String title,
+                String userId,
+                String content,
+                String photoUrl,
+                Integer likeCount) {
+        this.Uid = UUID.randomUUID().toString();
         this.userId = userId;
         this.title = title;
         this.content = content;
         this.photoUrl = photoUrl;
         this.likeCount = likeCount;
-        this.updateDate = updateDate;
     }
 
     @NonNull
@@ -154,7 +158,6 @@ public class Post {
     }
 
     public static Post create(Map<String, Object> json) {
-        String Uid = (String) json.get("id");
         String userId = (String) json.get("userId");
         String title = (String) json.get("title");
         String content = (String) json.get("content");
@@ -165,8 +168,10 @@ public class Post {
         ArrayList<String> likedBy = new ArrayList<String>
                 (Arrays.asList(((String) Objects.requireNonNull(json.get("likedBy"))).split(",")));
         String photoUrl = (String) json.get("photoUrl");
-        Post post = new Post(Objects.requireNonNull(Uid), title,userId, content,photoUrl,likeCount,updateDate);
+        Post post = new Post(title,userId, content,photoUrl,likeCount);
+        post.setUpdateDate(updateDate);
         post.setCommentList(commentList);
+        post.setLikedBy(likedBy);
         post.setLikeCount(likeCount);
         return post;
     }

@@ -31,12 +31,11 @@ public class User {
         this.email = email;
     }
 
-    public User(@NonNull String uid, String fullName, String profilePhoto, String email, Long updateDate) {
+    public User(@NonNull String uid, String fullName, String profilePhoto, String email) {
         Uid = uid;
         this.fullName = fullName;
         ProfilePhoto = profilePhoto;
         this.email = email;
-        this.updateDate = updateDate;
     }
 
     @NonNull
@@ -97,6 +96,9 @@ public class User {
         Long updateDate = ((Timestamp) Objects.requireNonNull(json.get("updateDate"))).getSeconds();
         String email = (String) json.get("email");
 
-        return new User(Objects.requireNonNull(Uid), fullName, profilePhoto, email, updateDate);
+        User user = new User(Objects.requireNonNull(Uid), fullName, profilePhoto, email);
+        user.setUpdateDate(updateDate);
+        user.setProfilePhoto(profilePhoto);
+        return user;
     }
 }
