@@ -52,6 +52,10 @@ public class MainActivity extends AppCompatActivity {
                         selectedFragment = new ExploreFragment();
                         actionBar.setTitle("Explore");
                         break;
+                    case R.id.addPostFragment:
+                        selectedFragment = new ExploreFragment();
+                        actionBar.setTitle("Add Post");
+                        break;
                     case R.id.likesFragment:
                         selectedFragment = new LikesFragment();
                         actionBar.setTitle("Likes");
