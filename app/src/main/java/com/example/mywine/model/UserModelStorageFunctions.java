@@ -1,6 +1,7 @@
 package com.example.mywine.model;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -70,18 +71,25 @@ public class UserModelStorageFunctions {
         return null;
     }
 
+
     public interface addUserListener {
         void onComplete();
     }
 
-    public void addUser(User user, PostModelStorageFunctions.addPostListener listener ){
-        modelFirebase.addUser(user, () -> {
+    public void addUser(User user, String password,UserModelStorageFunctions.addUserListener listener ){
+        modelFirebase.addUser(user,password,() -> {
             listener.onComplete();
             refreshUserList();
         });
     }
 
+    public interface saveUserImageListener{
+        void onComplete(String url);
+    }
 
+    public void saveUserImage(Bitmap imageBitmap, String uid,String imageName, UserModelStorageFunctions.saveUserImageListener listener ) {
+        modelFirebase.saveUserImage(imageBitmap,uid,imageName,listener);
+    }
 
     public void refreshUserList() {
         userListLoadingState.setValue(UserListLoadingState.loading);
@@ -95,26 +103,26 @@ public class UserModelStorageFunctions {
             userList.postValue(usrList);
         });
 
-        modelFirebase.getAllComments(lastUpdateDate, new ModelFirebase.getAllCommentsListener() {
+        modelFirebase.getAllUsers(lastUpdateDate, new ModelFirebase.getAllUsersListener() {
             @Override
-            public void onComplete(List<Comment> list) {
+            public void onComplete(List<User> list) {
                 // add all records to the local db
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
                         Long lastUpdateDate = new Long(0);
                         Log.d("TAG", "fb returned " + list.size());
-                        for (Comment comment : list) {
-                            AppLocalDB.db.CommentDao().insertAll(comment);
-                            if (lastUpdateDate < comment.getUpdateDate()) {
-                                lastUpdateDate = comment.getUpdateDate();
+                        for (User user : list) {
+                            AppLocalDB.db.UserDao().insertAll(user);
+                            if (lastUpdateDate < user.getUpdateDate()) {
+                                lastUpdateDate = user.getUpdateDate();
                             }
                         }
                         // update last local update date
                         MyApplication.getContext()
                                 .getSharedPreferences("TAG", Context.MODE_PRIVATE)
                                 .edit()
-                                .putLong("CommentLastUpdateDate", lastUpdateDate)
+                                .putLong("UserLastUpdateDate", lastUpdateDate)
                                 .commit();
 
                         //return all data to caller
@@ -136,4 +144,5 @@ public class UserModelStorageFunctions {
     public FirebaseUser getLoggedInUser() {
         return (modelFirebase.getLoggedInUser());
     }
+    public void signUserOut() { modelFirebase.signUserOut();}
 }

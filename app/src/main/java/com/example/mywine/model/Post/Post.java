@@ -22,7 +22,7 @@ import java.util.UUID;
 @Entity
 public class Post {
 
-    final public static String COLLECTION_NAME = "posts";
+    final public static String COLLECTION_NAME = "Posts";
 
     @PrimaryKey
     @NonNull
@@ -150,7 +150,7 @@ public class Post {
         json.put("title",title);
         json.put("content", content);
         json.put("likeCount", likeCount);
-        json.put("updateDate", FieldValue.serverTimestamp());
+        json.put("updateDate", System.currentTimeMillis()/1000);
         json.put("commentList", TextUtils.join(", ", CommentList));
         json.put("likedBy", TextUtils.join(", ", LikedBy));
         json.put("photoUrl", photoUrl);
@@ -161,8 +161,8 @@ public class Post {
         String userId = (String) json.get("userId");
         String title = (String) json.get("title");
         String content = (String) json.get("content");
-        Integer likeCount = (Integer) json.get("likeCount");
-        Long updateDate = ((Timestamp) Objects.requireNonNull(json.get("updateDate"))).getSeconds();
+        Integer likeCount =  Integer.parseInt((String) json.get("likeCount"));
+        Long updateDate = (Long)json.get("updateDate");
         ArrayList<String> commentList = new ArrayList<String>
                 (Arrays.asList(((String) Objects.requireNonNull(json.get("commentList"))).split(",")));
         ArrayList<String> likedBy = new ArrayList<String>

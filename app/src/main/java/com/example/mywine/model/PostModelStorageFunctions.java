@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.LiveData;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -124,4 +125,13 @@ public class PostModelStorageFunctions {
             refreshPostList();
         });
     }
+
+    public interface savePostImageListener{
+        void onComplete(String url);
+    }
+
+    public void savePostImage(Bitmap imageBitmap, String imageName, PostModelStorageFunctions.savePostImageListener listener ) {
+        modelFirebase.savePostImage(imageBitmap,imageName,listener);
+    }
+
 }

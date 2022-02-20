@@ -8,6 +8,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.NavHost;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -37,9 +41,12 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.type.TimeOfDayOrBuilder;
 import com.squareup.picasso.Picasso;
+import androidx.navigation.NavController;
+import androidx.navigation.NavHost;
+import androidx.navigation.ui.NavigationUI;
 
 public class FeedFragment extends Fragment {
-
+    NavController navController;
     PostListRvViewModel PostViewModel;
     CommentListRvViewModel CommentViewModel;
     FeedAdapter feedAdapter;
@@ -54,6 +61,7 @@ public class FeedFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         PostViewModel = new ViewModelProvider(this).get(PostListRvViewModel.class);
+
     }
 
     @Nullable
@@ -75,6 +83,13 @@ public class FeedFragment extends Fragment {
 
         setHasOptionsMenu(true);
         PostViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
+        feedAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(View v,int position) {
+                String stId = PostViewModel.getData().getValue().get(position).getUid();
+            }
+        });
+
         swipeRefresh.setRefreshing(PostModelStorageFunctions.instance.getPostListLoadingState().getValue() == PostModelStorageFunctions.PostListLoadingState.loading);
         PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), postListLoadingState -> {
             if (postListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
@@ -140,8 +155,9 @@ public class FeedFragment extends Fragment {
                     }
                 }
             });
-            likeCountTv.setText(post.getLikeCount());
-            commentCountTv.setText(post.getCommentList().size());
+            Integer likeNum = post.getLikeCount();
+            likeCountTv.setText(likeNum.toString());
+            commentCountTv.setText(String.valueOf(post.getCommentList().size()));
             postImv.setImageResource(R.drawable.avatar);
             if (post.getPhotoUrl() != null) {
                 Picasso.get()
@@ -153,7 +169,7 @@ public class FeedFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     post.addLike(user.getUid());
-                    likeCountTv.setText(post.getLikeCount());
+                    likeCountTv.setText(String.valueOf(post.getLikeCount()));
                 }
             });
             sendPostImv.setOnClickListener(new View.OnClickListener() {
@@ -167,7 +183,7 @@ public class FeedFragment extends Fragment {
                         CommentModelStorageFunctions.instance.addComment(comment,() ->{
                             //TODO
                         });
-                        commentCountTv.setText(post.getCommentList().size());
+                        commentCountTv.setText(String.valueOf(post.getCommentList().size()));
                     }
                 }
             });
@@ -230,6 +246,8 @@ public class FeedFragment extends Fragment {
             return PostViewModel.getData().getValue().size();
         }
     }
+
+
     class PostAdapter extends RecyclerView.Adapter<PostViewHolder>{
 
         OnItemClickListener listener;

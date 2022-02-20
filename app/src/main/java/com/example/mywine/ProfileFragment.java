@@ -9,6 +9,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -30,6 +31,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mywine.model.PicturePickDialog;
+import com.example.mywine.model.User.User;
+import com.example.mywine.model.UserModelStorageFunctions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -64,6 +67,7 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
     FloatingActionButton fab;
     ProgressDialog pd;
     Uri image_uri;
+    Bitmap imageBitmap;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -85,29 +89,23 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
         fab = view.findViewById(R.id.fab);
         pd = new ProgressDialog(getActivity());
 
-        Query query = databaseReference.orderByChild("email").equalTo(firebaseUser.getEmail());
-        query.addValueEventListener(new ValueEventListener() {
+        FirebaseUser currUser = UserModelStorageFunctions.instance.getLoggedInUser();
+        String Uid = currUser.getUid();
+        UserModelStorageFunctions.instance.getUserById(Uid,new UserModelStorageFunctions.GetUserById() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    String name = "" + ds.child("name").getValue();
-                    String email = "" + ds.child("email").getValue();
-                    String image = "" + ds.child("image").getValue();
+            public void onComplete(User user) {
+                String name = user.getFullName();
+                String email = user.getEmail();
+                String image = user.getProfilePhoto();
 
-                    nameTv.setText(name);
-                    emailTv.setText(email);
+                nameTv.setText(name);
+                emailTv.setText(email);
 
-                    try {
-                        Picasso.get().load(image).into(avatarIv);
-                    } catch (Exception e) {
-                        Picasso.get().load(R.drawable.ic_add_photo).into(avatarIv);
-                    }
-
+                try {
+                    Picasso.get().load(image).into(avatarIv);
+                } catch (Exception e) {
+                    Picasso.get().load(R.drawable.ic_add_photo).into(avatarIv);
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
@@ -204,54 +202,71 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
     public void OnDialogResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE) {
-                image_uri = data.getData();
-                uploadProfilePic(image_uri);
+                Bundle extras = data.getExtras();
+                imageBitmap = (Bitmap) extras.get("data");
+                avatarIv.setImageBitmap(imageBitmap);
+                uploadProfilePic(imageBitmap);
             }
             if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE) {
-                uploadProfilePic(image_uri);
+                Bundle extras = data.getExtras();
+                imageBitmap = (Bitmap) extras.get("data");
+                avatarIv.setImageBitmap(imageBitmap);
+                uploadProfilePic(imageBitmap);
             }
         }
     }
 
-    private void uploadProfilePic(Uri uri) {
+    private void uploadProfilePic(Bitmap imageBitmap) {
         pd.show();
-        String filePath = storagePath + "_" + firebaseUser.getUid();
-        StorageReference storageReference2 = storageReference.child(filePath);
-        storageReference2.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                while (!uriTask.isSuccessful()) ;
-                Uri downloadUri = uriTask.getResult();
-
-                if (uriTask.isSuccessful()) {
-                    HashMap<String, Object> results = new HashMap<>();
-                    results.put("image", downloadUri.toString());
-                    databaseReference.child(firebaseUser.getUid()).updateChildren(results)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    pd.dismiss();
-                                    Toast.makeText(getActivity(), "Image Updated...", Toast.LENGTH_SHORT).show();
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            pd.dismiss();
-                            Toast.makeText(getActivity(), "Error updating image...", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    pd.dismiss();
-                    Toast.makeText(getActivity(), "an error has occured", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-
-            }
-        });
+        FirebaseUser currUser = UserModelStorageFunctions.instance.getLoggedInUser();
+        String Uid = currUser.getUid();
+        if(imageBitmap != null){
+            UserModelStorageFunctions.instance.saveUserImage(imageBitmap,Uid,nameTv.getText() +".jpg",url -> {
+                UserModelStorageFunctions.instance.getUserById(Uid,new UserModelStorageFunctions.GetUserById() {
+                            @Override
+                            public void onComplete(User user) {
+                                user.setProfilePhoto(url);
+                            }
+                });
+            });
+        }
+//        String filePath = storagePath + "_" + firebaseUser.getUid();
+//        StorageReference storageReference2 = storageReference.child(filePath);
+//        storageReference2.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//            @Override
+//            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+//                while (!uriTask.isSuccessful()) ;
+//                Uri downloadUri = uriTask.getResult();
+//
+//                if (uriTask.isSuccessful()) {
+//                    HashMap<String, Object> results = new HashMap<>();
+//                    results.put("image", downloadUri.toString());
+//                    databaseReference.child(firebaseUser.getUid()).updateChildren(results)
+//                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                @Override
+//                                public void onSuccess(Void unused) {
+//                                    pd.dismiss();
+//                                    Toast.makeText(getActivity(), "Image Updated...", Toast.LENGTH_SHORT).show();
+//                                }
+//                            }).addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            pd.dismiss();
+//                            Toast.makeText(getActivity(), "Error updating image...", Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//                } else {
+//                    pd.dismiss();
+//                    Toast.makeText(getActivity(), "an error has occured", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//
+//            }
+//        });
 
     }
 
@@ -259,11 +274,16 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
     public void onDialogPickCompleted(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE) {
-                image_uri = data.getData();
-                uploadProfilePic(image_uri);
+                Bundle extras = data.getExtras();
+                imageBitmap = (Bitmap) extras.get("data");
+                avatarIv.setImageBitmap(imageBitmap);
+                uploadProfilePic(imageBitmap);
             }
             if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE) {
-                uploadProfilePic(image_uri);
+                Bundle extras = data.getExtras();
+                imageBitmap = (Bitmap) extras.get("data");
+                avatarIv.setImageBitmap(imageBitmap);
+                uploadProfilePic(imageBitmap);
             }
         }
     }
