@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.mywine.model.User.User;
+import com.example.mywine.model.UserModelStorageFunctions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -30,7 +32,7 @@ public class RegisterActivity extends AppCompatActivity {
     TextView LoginLink;
     EditText EmailInput, PasswordInput, NameInput;
     ProgressDialog progressDialog;
-    private FirebaseAuth mAuth;
+    //private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +44,7 @@ public class RegisterActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
 
-        mAuth = FirebaseAuth.getInstance();
+        //mAuth = FirebaseAuth.getInstance();
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Registering User...");
@@ -74,53 +76,57 @@ public class RegisterActivity extends AppCompatActivity {
                     PasswordInput.setError("Password length has to be at least 6 characters!");
                     PasswordInput.setFocusable(true);
                 } else {
-                    registerUser(email, password);
+                    registerUser(email, password,name);
                 }
             }
         });
     }
 
-    private void registerUser(String email, String password) {
+    private void registerUser(String email, String password,String name) {
         progressDialog.show();
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            progressDialog.dismiss();
-
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            String email = user.getEmail();
-                            String uid = user.getUid();
-                            String name ="";
-                            String img = "";
-                            HashMap<Object, String> hashMap = new HashMap<>();
-                            // TODO: get values from edit profile
-                            hashMap.put("email", email);
-                            hashMap.put("name", name);
-                            hashMap.put("uid", uid);
-                            hashMap.put("image", img);
-                            FirebaseDatabase db = FirebaseDatabase.getInstance();
-                            DatabaseReference ref = db.getReference("Users");
-                            ref.child(uid).setValue(hashMap);
-
-                            Toast.makeText(RegisterActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this, SignInActivity.class));
-                            finish();
-                        } else {
-                            progressDialog.dismiss();
-                            Toast.makeText(RegisterActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                progressDialog.dismiss();
-                Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
+        User newuser= new User(name,email);
+        UserModelStorageFunctions.instance.addUser(newuser,password,()->{
+            Toast.makeText(RegisterActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(RegisterActivity.this, SignInActivity.class));
+            finish();
         });
+//        mAuth.createUserWithEmailAndPassword(email, password)
+//                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<AuthResult> task) {
+//                        if (task.isSuccessful()) {
+//
+//                            FirebaseUser user = mAuth.getCurrentUser();
+//                            String email = user.getEmail();
+//                            String uid = user.getUid();
+//                            String name ="";
+//                            String img = "";
+//                            HashMap<Object, String> hashMap = new HashMap<>();
+//                            // TODO: get values from edit profile
+//                            hashMap.put("email", email);
+//                            hashMap.put("name", name);
+//                            hashMap.put("uid", uid);
+//                            hashMap.put("image", img);
+//                            FirebaseDatabase db = FirebaseDatabase.getInstance();
+//                            DatabaseReference ref = db.getReference("Users");
+//                            ref.child(uid).setValue(hashMap);
+//
+//                            Toast.makeText(RegisterActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
+//                            startActivity(new Intent(RegisterActivity.this, SignInActivity.class));
+//                            finish();
+//                        } else {
+//                            progressDialog.dismiss();
+//                            Toast.makeText(RegisterActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                progressDialog.dismiss();
+//                Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//
+//            }
+//       });
     }
 
     @Override

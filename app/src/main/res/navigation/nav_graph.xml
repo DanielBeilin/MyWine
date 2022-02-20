@@ -29,7 +29,7 @@
             app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/likesFragment"
+        android:id="@+id/addPostFragment"
         android:name="com.example.mywine.LikesFragment"
         android:label="fragment_likes"
         tools:layout="@layout/fragment_likes" />

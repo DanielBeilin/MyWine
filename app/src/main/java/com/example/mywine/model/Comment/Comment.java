@@ -80,13 +80,13 @@ public class Comment {
         json.put("content", content);
         json.put("userId", userId);
         json.put("postId", postId);
-        json.put("updateDate", FieldValue.serverTimestamp());
+        json.put("updateDate", System.currentTimeMillis()/1000);
         return json;
     }
 
     public static Comment create(Map<String, Object> json) {
         String content = (String) json.get("content");
-        Long updateDate = ((Timestamp) Objects.requireNonNull(json.get("updateDate"))).getSeconds();
+        Long updateDate = (Long)json.get("updateDate");
         String userId = (String) json.get("userId");
         String postId = (String) json.get("postId");
         Comment comment = new Comment(content,userId,postId);

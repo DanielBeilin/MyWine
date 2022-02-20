@@ -40,7 +40,7 @@ public class CommentModelStorageFunctions {
 
     public LiveData<List<Comment>> getAllComments() {
         if (commentList.getValue() == null) {
-            refreshCommentList();
+            //refreshCommentList();
         }
 
         return commentList;
@@ -53,7 +53,7 @@ public class CommentModelStorageFunctions {
     public void addComment(Comment comment, CommentModelStorageFunctions.addCommentListener listener ){
         modelFirebase.addComment(comment, () -> {
             listener.onComplete();
-            refreshCommentList();
+            //refreshCommentList();
         });
     }
 
@@ -76,49 +76,49 @@ public class CommentModelStorageFunctions {
     }
 
 
-    public void refreshCommentList() {
-        commentListLoadingState.setValue(CommentListLoadingState.loading);
-
-        Long lastUpdateDate = MyApplication.getContext()
-                .getSharedPreferences("TAG", Context.MODE_PRIVATE)
-                .getLong("CommentLastUpdateDate", 0);
-
-        executor.execute(() -> {
-            List<Comment> cmtList = AppLocalDB.db.CommentDao().getAll();
-            commentList.postValue(cmtList);
-        });
-
-        modelFirebase.getAllComments(lastUpdateDate, new ModelFirebase.getAllCommentsListener() {
-            @Override
-            public void onComplete(List<Comment> list) {
-                // add all records to the local db
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        Long lastUpdateDate = new Long(0);
-                        Log.d("TAG", "fb returned " + list.size());
-                        for (Comment comment : list) {
-                            AppLocalDB.db.CommentDao().insertAll(comment);
-                            if (lastUpdateDate < comment.getUpdateDate()) {
-                                lastUpdateDate = comment.getUpdateDate();
-                            }
-                        }
-                        // update last local update date
-                        MyApplication.getContext()
-                                .getSharedPreferences("TAG", Context.MODE_PRIVATE)
-                                .edit()
-                                .putLong("CommentLastUpdateDate", lastUpdateDate)
-                                .commit();
-
-                        //return all data to caller
-                        List<Comment> cmtList = AppLocalDB.db.CommentDao().getAll();
-                        commentList.postValue(cmtList);
-                        commentListLoadingState.postValue(CommentModelStorageFunctions.CommentListLoadingState.loaded);
-                    }
-                });
-            }
-
-        });
-    }
+//    public void refreshCommentList() {
+//        commentListLoadingState.setValue(CommentListLoadingState.loading);
+//
+//        Long lastUpdateDate = MyApplication.getContext()
+//                .getSharedPreferences("TAG", Context.MODE_PRIVATE)
+//                .getLong("CommentLastUpdateDate", 0);
+//
+//        executor.execute(() -> {
+//            List<Comment> cmtList = AppLocalDB.db.CommentDao().getAll();
+//            commentList.postValue(cmtList);
+//        });
+//
+//        modelFirebase.getAllComments(lastUpdateDate, new ModelFirebase.getAllCommentsListener() {
+//            @Override
+//            public void onComplete(List<Comment> list) {
+//                // add all records to the local db
+//                executor.execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Long lastUpdateDate = new Long(0);
+//                        Log.d("TAG", "fb returned " + list.size());
+//                        for (Comment comment : list) {
+//                            AppLocalDB.db.CommentDao().insertAll(comment);
+//                            if (lastUpdateDate < comment.getUpdateDate()) {
+//                                lastUpdateDate = comment.getUpdateDate();
+//                            }
+//                        }
+//                        // update last local update date
+//                        MyApplication.getContext()
+//                                .getSharedPreferences("TAG", Context.MODE_PRIVATE)
+//                                .edit()
+//                                .putLong("CommentLastUpdateDate", lastUpdateDate)
+//                                .commit();
+//
+//                        //return all data to caller
+//                        List<Comment> cmtList = AppLocalDB.db.CommentDao().getAll();
+//                        commentList.postValue(cmtList);
+//                        commentListLoadingState.postValue(CommentModelStorageFunctions.CommentListLoadingState.loaded);
+//                    }
+//                });
+//            }
+//
+//        });
+//    }
 
 }

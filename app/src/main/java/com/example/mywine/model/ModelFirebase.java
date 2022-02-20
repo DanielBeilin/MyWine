@@ -10,8 +10,11 @@ import com.example.mywine.model.User.User;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
@@ -31,6 +34,7 @@ import java.util.Objects;
 
 public class ModelFirebase {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
 
     public ModelFirebase() {
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -72,7 +76,7 @@ public class ModelFirebase {
     }
 
     public void getAllUsers(Long lastUpdateDate, getAllUsersListener listener){
-        db.collection(User.COLLECTION_NAME)
+        db.collection("usres")
                 .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
                 .get()
                 .addOnCompleteListener(task -> {
@@ -87,24 +91,24 @@ public class ModelFirebase {
                 });
     }
 
-    public void getAllComments(Long lastUpdateDate, getAllCommentsListener listener){
-        db.collection(Comment.COLLECTION_NAME)
-                .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
-                .get()
-                .addOnCompleteListener(task -> {
-                    List<Comment> list = new LinkedList<Comment>();
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot doc : task.getResult()){
-                            Comment comment = Comment.create(doc.getData());
-                            list.add(comment);
-                        }
-                    }
-                    listener.onComplete(list);
-                });
-    }
+//    public void getAllComments(Long lastUpdateDate, getAllCommentsListener listener){
+//        db.collection("Posts/comments")
+//                .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
+//                .get()
+//                .addOnCompleteListener(task -> {
+//                    List<Comment> list = new LinkedList<Comment>();
+//                    if (task.isSuccessful()) {
+//                        for (QueryDocumentSnapshot doc : task.getResult()){
+//                            Comment comment = Comment.create(doc.getData());
+//                            list.add(comment);
+//                        }
+//                    }
+//                    listener.onComplete(list);
+//                });
+//    }
 
     public void getPostById(String postId, PostModelStorageFunctions.GetPostById listener) {
-        db.collection(Post.COLLECTION_NAME)
+        db.collection("Posts")
                 .document(postId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -120,7 +124,7 @@ public class ModelFirebase {
     }
 
     public void getUserById(String userId, UserModelStorageFunctions.GetUserById listener) {
-        db.collection(User.COLLECTION_NAME)
+        db.collection("users")
                 .document(userId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -128,7 +132,7 @@ public class ModelFirebase {
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         User user = null;
                         if(task.isSuccessful() & task.getResult() != null){
-                            user = User.create(Objects.requireNonNull(task.getResult().getData()));
+                            user = User.create((task.getResult().getData()));
                         }
                         listener.onComplete(user);
                     }
@@ -136,7 +140,7 @@ public class ModelFirebase {
     }
 
     public void getUserNameById(String userId, UserModelStorageFunctions.GetNameByUserId listener) {
-        db.collection(User.COLLECTION_NAME)
+        db.collection("users")
                 .document(userId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -170,8 +174,9 @@ public class ModelFirebase {
     }
 
     public void getCommentsByPostId(String postId, CommentModelStorageFunctions.GetCommentsByPostId listener) {
-        db.collection(Comment.COLLECTION_NAME)
-                .whereEqualTo("postId",postId)
+        db.collection("Posts")
+                .document(postId)
+                .collection("comments")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -188,7 +193,7 @@ public class ModelFirebase {
     }
 
     public void getPostsByUserId(String userId, PostModelStorageFunctions.getPostsByUserID listener) {
-        db.collection(Post.COLLECTION_NAME)
+        db.collection("Posts")
             .whereEqualTo("userId",userId)
             .get()
             .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -205,18 +210,27 @@ public class ModelFirebase {
                 }
             });
     }
-    public void addUser(User user, UserModelStorageFunctions.addUserListener listener) {
-        Map<String, Object> json = user.toJson();
-        db.collection(Post.COLLECTION_NAME)
-                .document(user.getUid())
-                .set(json)
-                .addOnSuccessListener(unused -> listener.onComplete())
-                .addOnFailureListener(e -> listener.onComplete());
+    public void addUser(User user,String password, UserModelStorageFunctions.addUserListener listener) {
+        mAuth.createUserWithEmailAndPassword(user.getEmail(),password)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful()){
+                            user.setUid(task.getResult().getUser().getUid());
+                            Map<String, Object> json = user.toJson();
+                            db.collection("users")
+                                    .document(task.getResult().getUser().getUid())
+                                    .set(json)
+                                    .addOnSuccessListener(unused -> listener.onComplete())
+                                    .addOnFailureListener(e -> listener.onComplete());
+                        }
+                    }
+                });
     }
 
     public void addPost(Post post, PostModelStorageFunctions.addPostListener listener) {
         Map<String, Object> json = post.toJson();
-        db.collection(Post.COLLECTION_NAME).document(post.getUid())
+        db.collection("Posts").document(post.getUid())
                 .set(json)
                 .addOnSuccessListener(unused -> listener.onComplete())
                 .addOnFailureListener(e -> listener.onComplete());
@@ -224,9 +238,9 @@ public class ModelFirebase {
 
     public void addComment(Comment comment, CommentModelStorageFunctions.addCommentListener listener) {
         Map<String, Object> json = comment.toJson();
-        db.collection(Post.COLLECTION_NAME)
+        db.collection("Posts")
                 .document(comment.getPostId())
-                .collection(Comment.COLLECTION_NAME)
+                .collection("comments")
                 .document(comment.getUid()).set(json)
                 .addOnSuccessListener(unused -> listener.onComplete())
                 .addOnFailureListener(e -> listener.onComplete());
@@ -235,9 +249,30 @@ public class ModelFirebase {
 
     FirebaseStorage storage = FirebaseStorage.getInstance();
 
-    public void saveImage(Bitmap imageBitmap, String imageName, String imgType , ImageStorageFunctions.SaveImageListener listener ) {
+    public void saveUserImage(Bitmap imageBitmap,String uid, String imageName , UserModelStorageFunctions.saveUserImageListener listener ) {
         StorageReference storageRef = storage.getReference();
-        StorageReference imgRef = storageRef.child(String.format("%s_images/%s",imgType,imageName));
+        StorageReference imgRef = storageRef.child(String.format("users_images/%s",imageName));
+
+        ByteArrayOutputStream byteOutPutStream = new ByteArrayOutputStream();
+        imageBitmap.compress(Bitmap.CompressFormat.JPEG,100,byteOutPutStream);
+        byte[] data = byteOutPutStream.toByteArray();
+
+        UploadTask uploadTask = imgRef.putBytes(data);
+        uploadTask.addOnFailureListener(exception -> listener.onComplete(null))
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        imgRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            listener.onComplete(uri.toString());
+                        });
+                    }
+                });
+
+    }
+
+    public void savePostImage(Bitmap imageBitmap, String imageName , PostModelStorageFunctions.savePostImageListener listener ) {
+        StorageReference storageRef = storage.getReference();
+        StorageReference imgRef = storageRef.child(String.format("post_images/%s",imageName));
 
         ByteArrayOutputStream byteOutPutStream = new ByteArrayOutputStream();
         imageBitmap.compress(Bitmap.CompressFormat.JPEG,100,byteOutPutStream);

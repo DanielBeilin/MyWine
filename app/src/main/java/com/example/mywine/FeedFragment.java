@@ -83,6 +83,13 @@ public class FeedFragment extends Fragment {
 
         setHasOptionsMenu(true);
         PostViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
+        feedAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(View v,int position) {
+                String stId = PostViewModel.getData().getValue().get(position).getUid();
+            }
+        });
+
         swipeRefresh.setRefreshing(PostModelStorageFunctions.instance.getPostListLoadingState().getValue() == PostModelStorageFunctions.PostListLoadingState.loading);
         PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), postListLoadingState -> {
             if (postListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
@@ -148,8 +155,9 @@ public class FeedFragment extends Fragment {
                     }
                 }
             });
-            likeCountTv.setText(post.getLikeCount());
-            commentCountTv.setText(post.getCommentList().size());
+            Integer likeNum = post.getLikeCount();
+            likeCountTv.setText(likeNum.toString());
+            commentCountTv.setText(String.valueOf(post.getCommentList().size()));
             postImv.setImageResource(R.drawable.avatar);
             if (post.getPhotoUrl() != null) {
                 Picasso.get()
@@ -161,7 +169,7 @@ public class FeedFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     post.addLike(user.getUid());
-                    likeCountTv.setText(post.getLikeCount());
+                    likeCountTv.setText(String.valueOf(post.getLikeCount()));
                 }
             });
             sendPostImv.setOnClickListener(new View.OnClickListener() {
@@ -175,7 +183,7 @@ public class FeedFragment extends Fragment {
                         CommentModelStorageFunctions.instance.addComment(comment,() ->{
                             //TODO
                         });
-                        commentCountTv.setText(post.getCommentList().size());
+                        commentCountTv.setText(String.valueOf(post.getCommentList().size()));
                     }
                 }
             });
@@ -238,6 +246,8 @@ public class FeedFragment extends Fragment {
             return PostViewModel.getData().getValue().size();
         }
     }
+
+
     class PostAdapter extends RecyclerView.Adapter<PostViewHolder>{
 
         OnItemClickListener listener;

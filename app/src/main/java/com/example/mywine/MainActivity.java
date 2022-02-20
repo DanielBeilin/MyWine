@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -53,12 +52,8 @@ public class MainActivity extends AppCompatActivity {
                         actionBar.setTitle("Explore");
                         break;
                     case R.id.addPostFragment:
-                        selectedFragment = new ExploreFragment();
+                        selectedFragment = new AddPostFragment();
                         actionBar.setTitle("Add Post");
-                        break;
-                    case R.id.likesFragment:
-                        selectedFragment = new LikesFragment();
-                        actionBar.setTitle("Likes");
                         break;
                     case R.id.profileFragment:
                         selectedFragment = new ProfileFragment();

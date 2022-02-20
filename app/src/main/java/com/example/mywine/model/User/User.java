@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FieldValue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 
 @Entity
@@ -31,10 +32,10 @@ public class User {
         this.email = email;
     }
 
-    public User(@NonNull String uid, String fullName, String profilePhoto, String email) {
-        Uid = uid;
+    public User(String fullName, String email) {
+        Uid = UUID.randomUUID().toString();
         this.fullName = fullName;
-        ProfilePhoto = profilePhoto;
+        ProfilePhoto = "";
         this.email = email;
     }
 
@@ -81,22 +82,22 @@ public class User {
 
     public Map<String, Object> toJson() {
         Map<String, Object> json = new HashMap<String, Object>();
-        json.put("id", Uid);
-        json.put("name", fullName);
-        json.put("profilePhoto", ProfilePhoto);
-        json.put("updateDate", FieldValue.serverTimestamp());
+        json.put("Uid", Uid);
+        json.put("fullName", fullName);
+        json.put("ProfilePhoto", ProfilePhoto);
+        json.put("updateDate", System.currentTimeMillis()/1000);
         json.put("email", email);
         return json;
     }
 
     public static User create(Map<String, Object> json) {
-        String Uid = (String) json.get("id");
-        String fullName = (String) json.get("name");
-        String profilePhoto = (String) json.get("profilePhoto");
-        Long updateDate = ((Timestamp) Objects.requireNonNull(json.get("updateDate"))).getSeconds();
+        String Uid = (String) json.get("Uid");
+        String fullName = (String) json.get("fullName");
+        String profilePhoto = (String) json.get("ProfilePhoto");
+        Long updateDate = (Long)json.get("updateDate");
         String email = (String) json.get("email");
-
-        User user = new User(Objects.requireNonNull(Uid), fullName, profilePhoto, email);
+        User user = new User(fullName, email);
+        user.setUid(Uid);
         user.setUpdateDate(updateDate);
         user.setProfilePhoto(profilePhoto);
         return user;

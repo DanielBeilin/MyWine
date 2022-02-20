@@ -150,7 +150,7 @@ public class Post {
         json.put("title",title);
         json.put("content", content);
         json.put("likeCount", likeCount);
-        json.put("updateDate", FieldValue.serverTimestamp());
+        json.put("updateDate", System.currentTimeMillis()/1000);
         json.put("commentList", TextUtils.join(", ", CommentList));
         json.put("likedBy", TextUtils.join(", ", LikedBy));
         json.put("photoUrl", photoUrl);
@@ -162,8 +162,7 @@ public class Post {
         String title = (String) json.get("title");
         String content = (String) json.get("content");
         Integer likeCount =  Integer.parseInt((String) json.get("likeCount"));
-        String ts = (String) json.get("updateDate");
-        Long updateDate = Long.parseLong(ts);
+        Long updateDate = (Long)json.get("updateDate");
         ArrayList<String> commentList = new ArrayList<String>
                 (Arrays.asList(((String) Objects.requireNonNull(json.get("commentList"))).split(",")));
         ArrayList<String> likedBy = new ArrayList<String>
