@@ -58,7 +58,7 @@ public class ModelFirebase {
 
     public void getAllPosts(Long lastUpdateDate, getAllPostsListener listener){
         db.collection("Posts")
-                //.whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
+                .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                        @Override

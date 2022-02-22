@@ -46,22 +46,16 @@ import androidx.navigation.NavHost;
 import androidx.navigation.ui.NavigationUI;
 
 public class FeedFragment extends Fragment {
-    NavController navController;
     PostListRvViewModel PostViewModel;
-    CommentListRvViewModel CommentViewModel;
     FeedAdapter feedAdapter;
     SwipeRefreshLayout swipeRefresh;
     FirebaseUser user;
 
-    public static FeedFragment newInstance() {
-        return new FeedFragment();
-    }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         PostViewModel = new ViewModelProvider(this).get(PostListRvViewModel.class);
-
     }
 
     @Nullable
@@ -69,7 +63,9 @@ public class FeedFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         user = UserModelStorageFunctions.instance.getLoggedInUser();
+
         View view = inflater.inflate(R.layout.feed_fragment,container,false);
+
         swipeRefresh = view.findViewById(R.id.feedFragment_swiperefresh);
         swipeRefresh.setOnRefreshListener(PostModelStorageFunctions.instance::refreshPostList);
 
@@ -81,18 +77,23 @@ public class FeedFragment extends Fragment {
         feedAdapter = new FeedAdapter();
         list.setAdapter(feedAdapter);
 
-        setHasOptionsMenu(true);
-        PostViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
         feedAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(View v,int position) {
+                Log.d("TAG",PostViewModel.getData().getValue().toString());
                 String stId = PostViewModel.getData().getValue().get(position).getUid();
+                Log.d("TAG",String.format("%s",stId));
+
+                //Navigation.findNavController(v).navigate(StudentListRvFragmentDirections.actionStudentListRvFragmentToStudentDetailsFragment(stId));
+
             }
         });
 
+        setHasOptionsMenu(true);
+        PostViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
         swipeRefresh.setRefreshing(PostModelStorageFunctions.instance.getPostListLoadingState().getValue() == PostModelStorageFunctions.PostListLoadingState.loading);
-        PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), postListLoadingState -> {
-            if (postListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
+        PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), studentListLoadingState -> {
+            if (studentListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
                 swipeRefresh.setRefreshing(true);
             }else{
                 swipeRefresh.setRefreshing(false);
@@ -101,22 +102,19 @@ public class FeedFragment extends Fragment {
         });
         return view;
 
+
     }
 
-    private void refresh() {
-        //FeedAdapter.notifyDataSetChange();
-    }
+    private void refresh() { feedAdapter.notifyDataSetChanged(); }
 
     class FeedViewHolder extends RecyclerView.ViewHolder{
         ImageView postImv;
         ImageView userImv;
-        ImageView sendPostImv;
         TextView contentTv;
         TextView likeCountTv;
         TextView authorTv;
         TextView commentCountTv;
         Button likeBtn;
-        EditText newCommentEt;
 
         public FeedViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
@@ -127,13 +125,12 @@ public class FeedFragment extends Fragment {
             userImv = itemView.findViewById(R.id.post_row_user_imgv);
             commentCountTv = itemView.findViewById(R.id.post_comments_count_tv);
             likeBtn = itemView.findViewById(R.id.post_row_like_btn);
-            sendPostImv = itemView.findViewById(R.id.post_row_send_comment);
-            newCommentEt = itemView.findViewById(R.id.post_row_add_comment_eb);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int pos = getAdapterPosition();
+                    Log.d("TAG",String.format("%s",pos));
                     listener.onItemClick(v,pos);
 
                 }
@@ -172,47 +169,10 @@ public class FeedFragment extends Fragment {
                     likeCountTv.setText(String.valueOf(post.getLikeCount()));
                 }
             });
-            sendPostImv.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String newComment = newCommentEt.getText().toString();
-                    if(newComment.isEmpty()) {
-                        Toast.makeText(getContext(), "Comment cannot be empty", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Comment comment = new Comment(newComment,user.getUid(),post.getUid());
-                        CommentModelStorageFunctions.instance.addComment(comment,() ->{
-                            //TODO
-                        });
-                        commentCountTv.setText(String.valueOf(post.getCommentList().size()));
-                    }
-                }
-            });
-
         }
 
     }
 
-    class PostViewHolder extends RecyclerView.ViewHolder {
-        TextView userTv;
-        TextView contentTv;
-
-        public PostViewHolder(@NonNull View itemView, FeedFragment.OnItemClickListener listener) {
-            super(itemView);
-            userTv = itemView.findViewById(R.id.comment_row_username_tv);
-            contentTv = itemView.findViewById(R.id.comment_row_content_tv);
-        }
-
-        void bind(Comment comment){
-            contentTv.setText(comment.getContent());
-            UserModelStorageFunctions.instance.getNameByUserId(comment.getUserId(), new UserModelStorageFunctions.GetNameByUserId() {
-                @Override
-                public void onComplete(String userName) {
-                    userTv.setText(userName);
-                }
-            });
-
-        }
-    }
 
     interface OnItemClickListener{
         void onItemClick(View v,int position);
@@ -225,6 +185,15 @@ public class FeedFragment extends Fragment {
             this.listener = listener;
         }
 
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return position;
+        }
 
         @NonNull
         @Override
@@ -235,7 +204,8 @@ public class FeedFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull FeedViewHolder holder, int position) {
-            holder.bind(PostViewModel.getData().getValue().get(position));
+            Post post = PostViewModel.getData().getValue().get(position);
+            holder.bind(post);
         }
 
         @Override
@@ -247,34 +217,6 @@ public class FeedFragment extends Fragment {
         }
     }
 
-
-    class PostAdapter extends RecyclerView.Adapter<PostViewHolder>{
-
-        OnItemClickListener listener;
-        public void setOnItemClickListener(OnItemClickListener listener) {
-            this.listener = listener;
-        }
-        @NonNull
-        @Override
-        public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = getLayoutInflater().inflate(R.layout.comment_list_row,parent,false);
-            return new FeedFragment.PostViewHolder(view,listener);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull FeedFragment.PostViewHolder holder, int position) {
-            holder.bind(CommentViewModel.getData().getValue().get(position));
-        }
-
-        @Override
-        public int getItemCount() {
-            if(PostViewModel.getData().getValue() == null) {
-                return 0;
-            }
-            return PostViewModel.getData().getValue().size();
-        }
-
-    }
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.post_list_menu,menu);
