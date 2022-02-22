@@ -14,12 +14,11 @@ import com.example.mywine.model.Post.PostDao;
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.User.UserDao;
 
-@Database(entities = {User.class, Comment.class, Post.class}, version = 4)
+@Database(entities = {User.class,  Post.class}, version = 4)
 @TypeConverters(Converters.class)
 abstract class AppLocalDbRepository extends RoomDatabase {
     public abstract UserDao UserDao();
     public abstract PostDao PostDao();
-    public abstract CommentDao CommentDao();
 }
 
 public class AppLocalDB {

@@ -7,6 +7,8 @@ import androidx.room.PrimaryKey;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 
+import java.io.File;
+import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -80,16 +82,19 @@ public class Comment {
         json.put("content", content);
         json.put("userId", userId);
         json.put("postId", postId);
-        json.put("updateDate", System.currentTimeMillis()/1000);
+        json.put("updateDate", FieldValue.serverTimestamp());
         return json;
     }
 
     public static Comment create(Map<String, Object> json) {
+        String uuid = (String) json.get("Uid");
         String content = (String) json.get("content");
-        Long updateDate = (Long)json.get("updateDate");
+        Timestamp ts = (Timestamp) json.get("updateDate");
+        Long updateDate = ts.getSeconds();
         String userId = (String) json.get("userId");
         String postId = (String) json.get("postId");
         Comment comment = new Comment(content,userId,postId);
+        comment.setUid(uuid);
         comment.setUpdateDate(updateDate);
         return comment;
     }
