@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 
+import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -85,7 +86,7 @@ public class User {
         json.put("Uid", Uid);
         json.put("fullName", fullName);
         json.put("ProfilePhoto", ProfilePhoto);
-        json.put("updateDate", System.currentTimeMillis()/1000);
+        json.put("updateDate", FieldValue.serverTimestamp());
         json.put("email", email);
         return json;
     }
@@ -94,7 +95,8 @@ public class User {
         String Uid = (String) json.get("Uid");
         String fullName = (String) json.get("fullName");
         String profilePhoto = (String) json.get("ProfilePhoto");
-        Long updateDate = (Long)json.get("updateDate");
+        Timestamp ts = (Timestamp) json.get("updateDate");
+        Long updateDate = ts.getSeconds();
         String email = (String) json.get("email");
         User user = new User(fullName, email);
         user.setUid(Uid);

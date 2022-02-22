@@ -12,6 +12,7 @@ import com.example.mywine.model.Converters;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -145,12 +146,12 @@ public class Post {
 
     public Map<String, Object> toJson() {
         Map<String, Object> json = new HashMap<String, Object>();
-        json.put("id", Uid);
+        json.put("Uid", Uid);
         json.put("userId",userId);
         json.put("title",title);
         json.put("content", content);
         json.put("likeCount", likeCount);
-        json.put("updateDate", System.currentTimeMillis()/1000);
+        json.put("updateDate", FieldValue.serverTimestamp());
         json.put("commentList", TextUtils.join(", ", CommentList));
         json.put("likedBy", TextUtils.join(", ", LikedBy));
         json.put("photoUrl", photoUrl);
@@ -162,13 +163,15 @@ public class Post {
         String title = (String) json.get("title");
         String content = (String) json.get("content");
         Integer likeCount =  Integer.parseInt((String) json.get("likeCount"));
-        Long updateDate = (Long)json.get("updateDate");
+        Timestamp ts = (Timestamp) json.get("updateDate");
+        Long updateDate = ts.getSeconds();
         ArrayList<String> commentList = new ArrayList<String>
                 (Arrays.asList(((String) Objects.requireNonNull(json.get("commentList"))).split(",")));
         ArrayList<String> likedBy = new ArrayList<String>
                 (Arrays.asList(((String) Objects.requireNonNull(json.get("likedBy"))).split(",")));
         String photoUrl = (String) json.get("photoUrl");
         Post post = new Post(title,userId, content,photoUrl,likeCount);
+        post.setUid((String) json.get("Uid"));
         post.setUpdateDate(updateDate);
         post.setCommentList(commentList);
         post.setLikedBy(likedBy);
