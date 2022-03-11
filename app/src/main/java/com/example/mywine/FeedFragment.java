@@ -37,6 +37,7 @@ import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.PostModelStorageFunctions;
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.UserModelStorageFunctions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.type.TimeOfDayOrBuilder;
@@ -50,6 +51,7 @@ public class FeedFragment extends Fragment {
     FeedAdapter feedAdapter;
     SwipeRefreshLayout swipeRefresh;
     FirebaseUser user;
+    Bundle bundle;
 
 
     @Override

@@ -4,11 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import com.example.mywine.model.UserModelStorageFunctions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -16,24 +19,29 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     BottomNavigationView bottomNavigationView;
-    FirebaseAuth firebaseAuth;
     ActionBar actionBar;
+    String userId;
 
+    NavController navController;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        init();
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView2, new FeedFragment()).commit();
+
+    }
+
+    private void init() {
         actionBar = getSupportActionBar();
         actionBar.setTitle("Feed");
 
-        firebaseAuth = FirebaseAuth.getInstance();
-
         bottomNavigationView = findViewById(R.id.bottom_nav);
         bottomNavigationView.setOnNavigationItemSelectedListener(navListener);
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView2, new FeedFragment()).commit();
 
-
+        userId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
@@ -59,21 +67,11 @@ public class MainActivity extends AppCompatActivity {
                         selectedFragment = new ProfileFragment();
                         actionBar.setTitle("Profile");
                         break;
-
+                    default:
                 }
 
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView2, selectedFragment).commit();
                 return true;
                 }
             };
-
-    private void checkUSerStatus() {
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        if (firebaseUser != null) {
-            // TODO: user is already signed in
-        } else {
-            startActivity(new Intent(MainActivity.this, SignInActivity.class));
-            finish();
-        }
-    }
 }

@@ -17,6 +17,7 @@ import com.example.mywine.model.User.User;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -81,6 +82,25 @@ public class UserModelStorageFunctions {
             listener.onComplete();
             refreshUserList();
         });
+    }
+
+    public void updateUser(User user, UserModelStorageFunctions.addUserListener listener) {
+        modelFirebase.updateUser(user, () -> {
+            listener.onComplete();
+            refreshUserList();
+        });
+    }
+
+    public interface UploadUserPhotoListener {
+        void onComplete(String url);
+    }
+
+    public void uploadUserPhoto(Bitmap bitmap, String uid, UploadUserPhotoListener listener) {
+        modelFirebase.uploadUserPhoto(bitmap, uid, listener);
+    }
+
+    public void signIn(String email, String password, ModelFirebase.SignInOnSuccessListener onSuccessListener, ModelFirebase.SignInOnFailureListener onFailureListener) {
+        modelFirebase.signIn(email, password, onSuccessListener, onFailureListener);
     }
 
     public interface saveUserImageListener{

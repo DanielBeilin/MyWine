@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">MyWine</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="email">Email</string>
+    <string name="full_name">Full Name</string>
+    <string name="password">Password</string>
+    <string name="required">Required Field</string>
+    <string name="email_invalid">Email Is Invalid</string>
+    <string name="password_invalid">Password Is Invalid</string>
+    <string name="login">Login</string>
+    <string name="edit_profile">edit profile</string>
 </resources>

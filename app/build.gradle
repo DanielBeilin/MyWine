@@ -8,6 +8,13 @@ android {
     compileSdk 31
 
     defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation":
+                                     "$projectDir/schemas".toString()]
+            }
+        }
+
         applicationId "com.example.mywine"
         minSdk 21
         targetSdk 31
@@ -15,6 +22,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -38,7 +46,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
     implementation 'androidx.navigation:navigation-fragment:2.4.1'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
-    implementation 'androidx.room:room-common:2.4.0'
     implementation 'com.google.android.gms:play-services-base:18.0.1'
     implementation 'com.google.firebase:firebase-database:20.0.3'
     implementation 'com.google.firebase:firebase-storage:20.0.0'
@@ -52,15 +59,27 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:20.0.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    annotationProcessor 'androidx.room:room-compiler:2.3.0'
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.google.firebase:firebase-storage'
-    implementation 'androidx.room:room-runtime:2.3.0'
 
     def nav_version = "2.3.5"
     implementation "androidx.navigation:navigation-fragment:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
+
+    def room_version = "2.4.1"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    // optional - RxJava2 support for Room
+    implementation "androidx.room:room-rxjava2:$room_version"
+    // optional - RxJava3 support for Room
+    implementation "androidx.room:room-rxjava3:$room_version"
+    // optional - Guava support for Room, including Optional and ListenableFuture
+    implementation "androidx.room:room-guava:$room_version"
+    // optional - Test helpers
+    testImplementation "androidx.room:room-testing:$room_version"
+    // optional - Paging 3 Integration
+    implementation "androidx.room:room-paging:2.4.1"
 
     implementation 'com.squareup.picasso:picasso:2.71828'
 
