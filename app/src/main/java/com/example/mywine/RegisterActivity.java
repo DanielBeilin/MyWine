@@ -16,9 +16,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.UserModelStorageFunctions;
+import com.example.mywine.utils.InputValidator;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -28,33 +32,41 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
-    Button RegisterBtn;
+    MaterialButton RegisterBtn;
     TextView LoginLink;
-    EditText EmailInput, PasswordInput, NameInput;
+    TextInputLayout EmailInputLayout, PasswordInputLayout, NameInputLayout;
+    TextInputEditText EmailEditText, PasswordEditText, NameEditText;
     ProgressDialog progressDialog;
-    //private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register_activity);
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("Register");
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
+        init();
+        setListeners();
+    }
 
-        //mAuth = FirebaseAuth.getInstance();
-
+    private void init() {
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Registering User...");
 
-        LoginLink = findViewById(R.id.lnkLogin);
-        RegisterBtn = findViewById(R.id.btnRegister);
-        EmailInput = findViewById(R.id.txtEmail);
-        PasswordInput = findViewById(R.id.txtPwd);
-        NameInput = findViewById(R.id.txtName);
+        LoginLink = findViewById(R.id.login);
+        RegisterBtn = findViewById(R.id.registerButton);
+        EmailInputLayout = findViewById(R.id.emailInputLayout);
+        PasswordInputLayout = findViewById(R.id.passwordInputLayout);
+        NameInputLayout = findViewById(R.id.nameInputLayout);
+        EmailEditText = findViewById(R.id.emailEditText);
+        PasswordEditText = findViewById(R.id.passwordEditText);
+        NameEditText = findViewById(R.id.nameEditText);
+    }
 
+    private void setListeners() {
+        onLoginLinkClickListener();
+        onRegisterButtonClick();
+    }
+
+    private void onLoginLinkClickListener() {
         LoginLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,76 +74,59 @@ public class RegisterActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        RegisterBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String email = EmailInput.getText().toString().trim();
-                String password = PasswordInput.getText().toString().trim();
-                String name = NameInput.getText().toString().trim();
+    }
 
-                if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    EmailInput.setError("Invalid Email!");
-                    EmailInput.setFocusable(true);
-                } else if (password.length() < 6) {
-                    PasswordInput.setError("Password length has to be at least 6 characters!");
-                    PasswordInput.setFocusable(true);
-                } else {
-                    registerUser(email, password,name);
-                }
+    private void onRegisterButtonClick() {
+        RegisterBtn.setOnClickListener(view -> {
+            setErrorIfFullNameIsInvalid();
+            setErrorIfEmailIsInvalid();
+            setErrorIfPasswordIsInvalid();
+            if(isFormValid()) {
+                registerUser(NameEditText.getText().toString(),
+                        PasswordEditText.getText().toString(),
+                        NameEditText.getText().toString());
             }
         });
     }
 
-    private void registerUser(String email, String password,String name) {
+    private void registerUser(String email, String password, String name) {
+        RegisterBtn.setEnabled(false);
         progressDialog.show();
-        User newuser= new User(name,email);
-        UserModelStorageFunctions.instance.addUser(newuser,password,()->{
+        User user = new User(name,email);
+        UserModelStorageFunctions.instance.addUser(user, password,()->{
             Toast.makeText(RegisterActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(RegisterActivity.this, SignInActivity.class));
             finish();
         });
-//        mAuth.createUserWithEmailAndPassword(email, password)
-//                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//
-//                            FirebaseUser user = mAuth.getCurrentUser();
-//                            String email = user.getEmail();
-//                            String uid = user.getUid();
-//                            String name ="";
-//                            String img = "";
-//                            HashMap<Object, String> hashMap = new HashMap<>();
-//                            // TODO: get values from edit profile
-//                            hashMap.put("email", email);
-//                            hashMap.put("name", name);
-//                            hashMap.put("uid", uid);
-//                            hashMap.put("image", img);
-//                            FirebaseDatabase db = FirebaseDatabase.getInstance();
-//                            DatabaseReference ref = db.getReference("Users");
-//                            ref.child(uid).setValue(hashMap);
-//
-//                            Toast.makeText(RegisterActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
-//                            startActivity(new Intent(RegisterActivity.this, SignInActivity.class));
-//                            finish();
-//                        } else {
-//                            progressDialog.dismiss();
-//                            Toast.makeText(RegisterActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                progressDialog.dismiss();
-//                Toast.makeText(RegisterActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-//
-//            }
-//       });
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return super.onSupportNavigateUp();
+    private void setErrorIfFullNameIsInvalid() {
+        if (!InputValidator.isFullNameValid(NameEditText.getText())) {
+            NameInputLayout.setError(getString(R.string.required));
+        } else {
+            NameInputLayout.setError(null);
+        }
+    }
+
+    private void setErrorIfEmailIsInvalid() {
+        if (!InputValidator.isEmailValid(EmailEditText.getText())) {
+            EmailEditText.setError(getString(R.string.email_invalid));
+        } else {
+            EmailInputLayout.setError(null);
+        }
+    }
+
+    private void setErrorIfPasswordIsInvalid() {
+        if (!InputValidator.isPasswordValid(PasswordEditText.getText())) {
+            PasswordInputLayout.setError(getString(R.string.password_invalid));
+        } else {
+            PasswordInputLayout.setError(null);
+        }
+    }
+
+    private boolean isFormValid() {
+        return (InputValidator.isFullNameValid(NameEditText.getText()) &&
+                InputValidator.isEmailValid(EmailEditText.getText()) &&
+                InputValidator.isPasswordValid(PasswordEditText.getText()));
     }
 }

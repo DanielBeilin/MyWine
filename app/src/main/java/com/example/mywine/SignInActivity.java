@@ -15,9 +15,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mywine.model.ModelFirebase;
+import com.example.mywine.model.UserModelStorageFunctions;
+import com.example.mywine.utils.InputValidator;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,10 +35,10 @@ import java.util.HashMap;
 public class SignInActivity extends AppCompatActivity {
 
     private static final String TAG = "SignInActivity";
-    Button LoginButton;
-    TextView RegisterLink;
-    EditText EmailInput, PasswordInput;
-    private FirebaseAuth mAuth;
+    MaterialButton loginButton;
+    TextView registerLink;
+    TextInputLayout emailInputLayout, passwordInputLayout, nameInputLayout;
+    TextInputEditText emailEditText, passwordEditText, nameEditText;
     ProgressDialog progressDialog;
 
     @Override
@@ -40,87 +46,108 @@ public class SignInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_in_activity);
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setTitle("Login");
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
+        init();
+        setListeners();
+    }
 
-        mAuth = FirebaseAuth.getInstance();
-
+    private void init() {
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loggin In...");
 
-        LoginButton = findViewById(R.id.btnLogin);
-        RegisterLink = findViewById(R.id.lnkRegister);
-        EmailInput = findViewById(R.id.txtEmail);
-        PasswordInput = findViewById(R.id.txtPwd);
+        registerLink = findViewById(R.id.lnkRegister);
+        loginButton = findViewById(R.id.loginButton);
+        emailInputLayout = findViewById(R.id.emailInputLayout);
+        passwordInputLayout = findViewById(R.id.passwordInputLayout);
+        nameInputLayout = findViewById(R.id.nameInputLayout);
+        emailEditText = findViewById(R.id.emailEditText);
+        passwordEditText = findViewById(R.id.passwordEditText);
+        nameEditText = findViewById(R.id.nameEditText);
 
-        RegisterLink.setOnClickListener(new View.OnClickListener() {
+    }
+
+    private void setListeners() {
+        onRegisterLinkClick();
+        onLoginButtonClicked();
+        onPasswordEditTextListener();
+        onEmailEditTextListener();
+    }
+
+    private void onRegisterLinkClick() {
+        registerLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(SignInActivity.this, RegisterActivity.class);
                 startActivity(intent);
             }
         });
+    }
 
-        LoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String email = EmailInput.getText().toString();
-                String password = PasswordInput.getText().toString().trim();
-                if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    EmailInput.setError("Invalid Email!");
-                    EmailInput.setFocusable(true);
-                } else if (password.length() < 6) {
-                    PasswordInput.setError("Password length has to be at least 6 characters!");
-                    PasswordInput.setFocusable(true);
-                } else {
-                    loginUser(email, password);
-                }
+    private void onLoginButtonClicked() {
+        loginButton.setOnClickListener(view -> {
+            setErrorIfEmailIsInvalid();
+            setErrorIfPasswordIsInvalid();
+            if(isFormValid()) {
+                loginButton.setEnabled(false);
+                registerLink.setEnabled(false);
+                progressDialog.show();
+                signInUser(emailEditText.getText().toString(), passwordEditText.getText().toString());
             }
         });
     }
 
-    private void loginUser(String email, String password) {
-        progressDialog.show();
+    private boolean isFormValid() {
+        return (setErrorIfEmailIsInvalid() &&
+                setErrorIfPasswordIsInvalid());
+    }
 
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            progressDialog.dismiss();
-                            FirebaseUser user = mAuth.getCurrentUser();
+    private boolean setErrorIfEmailIsInvalid() {
+        if (!InputValidator.isEmailValid(emailEditText.getText())) {
+            emailInputLayout.setError(getString(R.string.email_invalid));
+            return false;
+        } else {
+            emailInputLayout.setError(null);
+            return true;
+        }
+    }
 
-                            String email = user.getEmail();
-                            String uid = user.getUid();
-                            String name ="";
-                            String img = "";
-                            HashMap<Object, String> hashMap = new HashMap<>();
-                            // TODO: get values from edit profile
-                            hashMap.put("email", email);
-                            hashMap.put("name", name);
-                            hashMap.put("uid", uid);
-                            hashMap.put("image", img);
-                            FirebaseDatabase db = FirebaseDatabase.getInstance();
-                            DatabaseReference ref = db.getReference("Users");
-                            ref.child(uid).setValue(hashMap);
+    private boolean setErrorIfPasswordIsInvalid() {
+        if (!InputValidator.isPasswordValid(passwordEditText.getText())) {
+            passwordInputLayout.setError(getString(R.string.password_invalid));
+            return false;
+        } else {
+            passwordInputLayout.setError(null);
+            return true;
+        }
+    }
 
-                            Toast.makeText(SignInActivity.this, " Registered Successfully!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(SignInActivity.this, MainActivity.class));
-                            finish();
-                        } else {
-                            Toast.makeText(SignInActivity.this, "Authentication Failed", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                progressDialog.dismiss();
-                Toast.makeText(SignInActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
+    private void onEmailEditTextListener() {
+        emailEditText.setOnKeyListener((view, i, keyEvent) -> {
+            setErrorIfEmailIsInvalid();
+            return false;
         });
+    }
+
+    private void onPasswordEditTextListener() {
+        passwordEditText.setOnKeyListener((view, i, keyEvent) -> {
+            setErrorIfPasswordIsInvalid();
+            return false;
+        });
+    }
+
+    private void signInUser(String email, String password) {
+        UserModelStorageFunctions.instance.signIn(
+                emailEditText.getText().toString(),
+                passwordEditText.getText().toString(),
+                () -> {
+                    Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                    startActivity(intent);
+                },
+                errorMessage -> {
+                    Toast.makeText(SignInActivity.this, "error occurred trying to sign in!", Toast.LENGTH_SHORT).show();
+                    loginButton.setEnabled(true);
+                    registerLink.setEnabled(true);
+                    progressDialog.hide();
+                });
     }
 
     @Override

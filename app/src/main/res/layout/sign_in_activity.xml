@@ -1,68 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".SignInActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
 
         <TextView
-            android:id="@+id/loginscrn"
+            android:id="@+id/loginText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="80dp"
-            android:text="Login"
-            android:textSize="25dp"
+            android:text="@string/login"
+            android:textSize="30dp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/fstTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
-            android:layout_marginTop="20dp"
-            android:text="Email" />
-
-        <EditText
-            android:id="@+id/txtEmail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
-            android:ems="10" />
-
-        <TextView
-            android:id="@+id/secTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
-            android:text="Password" />
-
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/password"
-            android:layout_width="wrap_content"
+            android:id="@+id/emailInputLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:passwordToggleEnabled="true">
+            android:hint="@string/email"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-            <EditText
-                android:id="@+id/txtPwd"
-                android:layout_width="206dp"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/emailEditText"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="100dp"
-                android:ems="10"
-                android:inputType="textPassword" />
+                android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/btnLogin"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/passwordInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            app:passwordToggleEnabled="true"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/loginButton"
             android:layout_width="208dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
-            android:text="Login" />
+            android:layout_gravity="center"
+            android:text="@string/login" />
 
         <TextView
             android:id="@+id/lnkRegister"
@@ -75,4 +72,4 @@
             android:textSize="20dp" />
     </LinearLayout>
 
-</RelativeLayout >
+</LinearLayout >

@@ -33,8 +33,13 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ModelFirebase {
+    public static final String USERS_COLLECTION_NAME = "users";
+    public static final String POSTS_COLLECTION_NAME = "posts";
+    public static final String USERS_IMAGE_FOLDER = "users_images/";
+
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+    FirebaseStorage storage = FirebaseStorage.getInstance();
 
     public ModelFirebase() {
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -56,8 +61,16 @@ public class ModelFirebase {
         void onComplete(List<Comment> list);
     }
 
+    public interface SignInOnFailureListener {
+        void onComplete(String errorMessage);
+    }
+
+    public interface SignInOnSuccessListener {
+        void onComplete();
+    }
+
     public void getAllPosts(Long lastUpdateDate, getAllPostsListener listener){
-        db.collection("Posts")
+        db.collection(POSTS_COLLECTION_NAME)
                 .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -76,7 +89,7 @@ public class ModelFirebase {
     }
 
     public void getAllUsers(Long lastUpdateDate, getAllUsersListener listener){
-        db.collection("usres")
+        db.collection(USERS_COLLECTION_NAME)
                 .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
                 .get()
                 .addOnCompleteListener(task -> {
@@ -108,7 +121,7 @@ public class ModelFirebase {
 //    }
 
     public void getPostById(String postId, PostModelStorageFunctions.GetPostById listener) {
-        db.collection("Posts")
+        db.collection(POSTS_COLLECTION_NAME)
                 .document(postId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -124,7 +137,7 @@ public class ModelFirebase {
     }
 
     public void getUserById(String userId, UserModelStorageFunctions.GetUserById listener) {
-        db.collection("users")
+        db.collection(USERS_COLLECTION_NAME)
                 .document(userId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -140,7 +153,7 @@ public class ModelFirebase {
     }
 
     public void getUserNameById(String userId, UserModelStorageFunctions.GetNameByUserId listener) {
-        db.collection("users")
+        db.collection(USERS_COLLECTION_NAME)
                 .document(userId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -174,7 +187,7 @@ public class ModelFirebase {
     }
 
     public void getCommentsByPostId(String postId, CommentModelStorageFunctions.GetCommentsByPostId listener) {
-        db.collection("Posts")
+        db.collection(POSTS_COLLECTION_NAME)
                 .document(postId)
                 .collection("comments")
                 .get()
@@ -193,7 +206,7 @@ public class ModelFirebase {
     }
 
     public void getPostsByUserId(String userId, PostModelStorageFunctions.getPostsByUserID listener) {
-        db.collection("Posts")
+        db.collection(POSTS_COLLECTION_NAME)
             .whereEqualTo("userId",userId)
             .get()
             .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -218,7 +231,7 @@ public class ModelFirebase {
                         if(task.isSuccessful()){
                             user.setUid(task.getResult().getUser().getUid());
                             Map<String, Object> json = user.toJson();
-                            db.collection("users")
+                            db.collection(USERS_COLLECTION_NAME)
                                     .document(task.getResult().getUser().getUid())
                                     .set(json)
                                     .addOnSuccessListener(unused -> listener.onComplete())
@@ -228,9 +241,28 @@ public class ModelFirebase {
                 });
     }
 
+    public void updateUser(User user, UserModelStorageFunctions.addUserListener listener) {
+        Map<String, Object> jsonUser = user.toJson();
+        db.collection(USERS_COLLECTION_NAME)
+                .document(user.getUid())
+                .update(jsonUser)
+                .addOnSuccessListener(unused -> listener.onComplete())
+                .addOnFailureListener(e -> listener.onComplete());
+    }
+
+    public void signIn(String email, String password, SignInOnSuccessListener onSuccessListener, SignInOnFailureListener onFailureListener) {
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(task -> {
+                    onSuccessListener.onComplete();
+                })
+                .addOnFailureListener(command -> {
+                    onFailureListener.onComplete(command.getMessage());
+                });
+    }
+
     public void addPost(Post post, PostModelStorageFunctions.addPostListener listener) {
         Map<String, Object> json = post.toJson();
-        db.collection("Posts").document(post.getUid())
+        db.collection(POSTS_COLLECTION_NAME).document(post.getUid())
                 .set(json)
                 .addOnSuccessListener(unused -> listener.onComplete())
                 .addOnFailureListener(e -> listener.onComplete());
@@ -238,7 +270,7 @@ public class ModelFirebase {
 
     public void addComment(Comment comment, CommentModelStorageFunctions.addCommentListener listener) {
         Map<String, Object> json = comment.toJson();
-        db.collection("Posts")
+        db.collection(POSTS_COLLECTION_NAME)
                 .document(comment.getPostId())
                 .collection("comments")
                 .document(comment.getUid()).set(json)
@@ -246,8 +278,19 @@ public class ModelFirebase {
                 .addOnFailureListener(e -> listener.onComplete());
     }
 
+    public void uploadUserPhoto(Bitmap imageBmp, String name, UserModelStorageFunctions.UploadUserPhotoListener listener){
+        final StorageReference imagesRef = storage.getReference().child(USERS_IMAGE_FOLDER).child(name);
 
-    FirebaseStorage storage = FirebaseStorage.getInstance();
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+        imageBmp.compress(Bitmap.CompressFormat.JPEG, 100, byteArray);
+        byte[] data = byteArray.toByteArray();
+
+        UploadTask uploadTask = imagesRef.putBytes(data);
+        uploadTask.addOnFailureListener(exception -> listener.onComplete(null))
+                .addOnSuccessListener(taskSnapshot -> imagesRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    listener.onComplete(uri.toString());
+                }));
+    };
 
     public void saveUserImage(Bitmap imageBitmap,String uid, String imageName , UserModelStorageFunctions.saveUserImageListener listener ) {
         StorageReference storageRef = storage.getReference();

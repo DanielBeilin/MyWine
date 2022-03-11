@@ -16,7 +16,7 @@
         android:label="fragment_profile"
         tools:layout="@layout/fragment_profile" >
         <argument
-            android:name="user_id"
+            android:name="userId"
             app:argType="string" />
     </fragment>
     <fragment
@@ -25,17 +25,12 @@
         android:label="fragment_add_post"
         tools:layout="@layout/fragment_add_post" >
         <argument
-            android:name="user_id"
+            android:name="userId"
             app:argType="string" />
     </fragment>
-    <fragment
-        android:id="@+id/addPostFragment"
-        android:name="com.example.mywine.LikesFragment"
-        android:label="fragment_likes"
-        tools:layout="@layout/fragment_likes" />
-    <fragment
-        android:id="@+id/exploreFragment"
-        android:name="com.example.mywine.ExploreFragment"
-        android:label="fragment_explore"
-        tools:layout="@layout/fragment_explore" />
+<!--    <fragment-->
+<!--        android:id="@+id/exploreFragment"-->
+<!--        android:name="com.example.mywine.ExploreFragment"-->
+<!--        android:label="fragment_explore"-->
+<!--        tools:layout="@layout/fragment_explore" />-->
 </navigation>
