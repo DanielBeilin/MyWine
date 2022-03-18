@@ -34,8 +34,9 @@ import java.util.Objects;
 
 public class ModelFirebase {
     public static final String USERS_COLLECTION_NAME = "users";
-    public static final String POSTS_COLLECTION_NAME = "posts";
-    public static final String USERS_IMAGE_FOLDER = "users_images/";
+    public static final String POSTS_COLLECTION_NAME = "Posts";
+    public static final String USERS_IMAGE_FOLDER = "user_images/";
+    public static final String POSTS_IMAGE_FOLDER = "post_images/";
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -262,10 +263,24 @@ public class ModelFirebase {
 
     public void addPost(Post post, PostModelStorageFunctions.addPostListener listener) {
         Map<String, Object> json = post.toJson();
-        db.collection(POSTS_COLLECTION_NAME).document(post.getUid())
+        db.collection(POSTS_COLLECTION_NAME).document()
                 .set(json)
                 .addOnSuccessListener(unused -> listener.onComplete())
                 .addOnFailureListener(e -> listener.onComplete());
+    }
+
+    public void uploadPostImage(Bitmap imageBmp, String name, PostModelStorageFunctions.addPostImageListener listener) {
+        final StorageReference imagesRef = storage.getReference().child(POSTS_IMAGE_FOLDER).child(name);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        imageBmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        UploadTask uploadTask = imagesRef.putBytes(data);
+        uploadTask.addOnFailureListener(exception -> listener.onComplete(null))
+                .addOnSuccessListener(taskSnapshot -> imagesRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    listener.onComplete(uri.toString());
+                }));
     }
 
     public void addComment(Comment comment, CommentModelStorageFunctions.addCommentListener listener) {
@@ -313,25 +328,25 @@ public class ModelFirebase {
 
     }
 
-    public void savePostImage(Bitmap imageBitmap, String imageName , PostModelStorageFunctions.savePostImageListener listener ) {
-        StorageReference storageRef = storage.getReference();
-        StorageReference imgRef = storageRef.child(String.format("post_images/%s",imageName));
-
-        ByteArrayOutputStream byteOutPutStream = new ByteArrayOutputStream();
-        imageBitmap.compress(Bitmap.CompressFormat.JPEG,100,byteOutPutStream);
-        byte[] data = byteOutPutStream.toByteArray();
-
-        UploadTask uploadTask = imgRef.putBytes(data);
-        uploadTask.addOnFailureListener(exception -> listener.onComplete(null))
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        imgRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                            listener.onComplete(uri.toString());
-                        });
-                    }
-                });
-    }
+//    public void savePostImage(Bitmap imageBitmap, String imageName , PostModelStorageFunctions.savePostImageListener listener ) {
+//        StorageReference storageRef = storage.getReference();
+//        StorageReference imgRef = storageRef.child(String.format("post_images/%s",imageName));
+//
+//        ByteArrayOutputStream byteOutPutStream = new ByteArrayOutputStream();
+//        imageBitmap.compress(Bitmap.CompressFormat.JPEG,100,byteOutPutStream);
+//        byte[] data = byteOutPutStream.toByteArray();
+//
+//        UploadTask uploadTask = imgRef.putBytes(data);
+//        uploadTask.addOnFailureListener(exception -> listener.onComplete(null))
+//                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                    @Override
+//                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                        imgRef.getDownloadUrl().addOnSuccessListener(uri -> {
+//                            listener.onComplete(uri.toString());
+//                        });
+//                    }
+//                });
+//    }
 
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
