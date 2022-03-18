@@ -15,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -60,7 +61,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 
-public class ProfileFragment extends Fragment implements PicturePickDialog.NoticeDialogListener {
+public class ProfileFragment extends PicturePickDialog {
 
     ImageView avatarImage;
     TextView nameTextView, emailTextView;
@@ -98,6 +99,11 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
 
     private void setListeners() {
         onFabClick();
+        onAvatarImageClick();
+    }
+
+    private void onAvatarImageClick() {
+        avatarImage.setOnClickListener(this::showDialog);
     }
 
     private void onFabClick() {
@@ -124,7 +130,7 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
     private void initUserDetails() {
         nameTextView.setText(currentUser.getFullName());
         emailTextView.setText(currentUser.getEmail());
-        avatarImage.setImageResource(R.drawable.ic_add_photo);
+        avatarImage.setImageResource(R.drawable.ic_profile);
         String imageUrl = currentUser.getProfilePhoto();
 
         if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -168,9 +174,7 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
     }
 
     public void showPicturePickDialog() {
-        // Create an instance of the dialog fragment and show it
-        DialogFragment PicturePickDialog = new PicturePickDialog();
-        PicturePickDialog.show(getActivity().getSupportFragmentManager(), "PicturePickDialogFragment");
+
     }
 
     private void showFieldUpdateDialog(String field) {
@@ -227,7 +231,7 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
     }
 
     @Override
-    public void onDialogPickCompleted(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE) {
                 Uri selectedImageUri = data.getData();
