@@ -52,7 +52,7 @@ public class FeedFragment extends Fragment {
     SwipeRefreshLayout swipeRefresh;
     FirebaseUser user;
     Bundle bundle;
-
+    NavController navController;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -64,6 +64,7 @@ public class FeedFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        navController = NavHostFragment.findNavController(this);
         user = UserModelStorageFunctions.instance.getLoggedInUser();
 
         View view = inflater.inflate(R.layout.feed_fragment,container,false);
@@ -103,8 +104,6 @@ public class FeedFragment extends Fragment {
 
         });
         return view;
-
-
     }
 
     private void refresh() { feedAdapter.notifyDataSetChanged(); }
@@ -128,6 +127,8 @@ public class FeedFragment extends Fragment {
             commentCountTv = itemView.findViewById(R.id.post_comments_count_tv);
             likeBtn = itemView.findViewById(R.id.post_row_like_btn);
 
+            setOnProfileImageClickListener();
+
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -137,7 +138,12 @@ public class FeedFragment extends Fragment {
 
                 }
             });
+        }
 
+        private void setOnProfileImageClickListener() {
+            userImv.setOnClickListener((v) -> {
+                navController.navigate(FeedFragmentDirections.actionFeedFragmentToProfileFragment(UserModelStorageFunctions.instance.getLoggedInUser().getUid()));
+            });
         }
 
         void bind(Post post){

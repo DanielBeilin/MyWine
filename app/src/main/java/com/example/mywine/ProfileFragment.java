@@ -67,15 +67,16 @@ public class ProfileFragment extends PicturePickDialog {
     TextView nameTextView, emailTextView;
     MaterialButton editButton;
     ProgressDialog pd;
-    Bitmap imageBitmap;
-    String userId;
+//    String userId;
     User currentUser;
     NavController navController;
     SwipeRefreshLayout swipeRefresh;
+    String userIdFromBundle;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
+        userIdFromBundle = ProfileFragmentArgs.fromBundle(getArguments()).getUserId();
     }
 
     @Override
@@ -123,8 +124,7 @@ public class ProfileFragment extends PicturePickDialog {
         swipeRefresh = view.findViewById(R.id.profile_fragment_swipe_refresh);
         navController = NavHostFragment.findNavController(this);
         pd = new ProgressDialog(getActivity());
-        userId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
-        setUser(userId);
+        setUser();
     }
 
     private void initUserDetails() {
@@ -140,7 +140,15 @@ public class ProfileFragment extends PicturePickDialog {
         }
     }
 
-    public void setUser(String id) {
+    public void setUser() {
+        String userId;
+
+        if (userIdFromBundle.isEmpty()) {
+            userId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
+        } else {
+            userId = userIdFromBundle;
+        }
+
         UserModelStorageFunctions.instance.getUserById(userId, new UserModelStorageFunctions.GetUserById() {
             @Override
             public void onComplete(User user) {
