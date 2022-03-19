@@ -185,6 +185,10 @@ public class PostModelStorageFunctions {
         void onComplete();
     }
 
+    public interface addPostImageListener {
+        void onComplete(String url);
+    }
+
     public void addPost(Post post, addPostListener listener ){
         modelFirebase.addPost(post, () -> {
             listener.onComplete();
@@ -192,12 +196,16 @@ public class PostModelStorageFunctions {
         });
     }
 
+    public void uploadPostImage(Bitmap imageBmp, String name, PostModelStorageFunctions.addPostImageListener listener) {
+        modelFirebase.uploadPostImage(imageBmp, name, listener);
+    }
+
     public interface savePostImageListener{
         void onComplete(String url);
     }
 
-    public void savePostImage(Bitmap imageBitmap, String imageName, PostModelStorageFunctions.savePostImageListener listener ) {
-        modelFirebase.savePostImage(imageBitmap,imageName,listener);
-    }
+//    public void savePostImage(Bitmap imageBitmap, String imageName, PostModelStorageFunctions.savePostImageListener listener ) {
+//        modelFirebase.savePostImage(imageBitmap,imageName,listener);
+//    }
 
 }
