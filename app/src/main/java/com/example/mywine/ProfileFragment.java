@@ -23,14 +23,19 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,6 +43,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mywine.model.PicturePickDialog;
+import com.example.mywine.model.Post.Post;
+import com.example.mywine.model.PostModelStorageFunctions;
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.UserModelStorageFunctions;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -70,11 +77,15 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
     String userId;
     User currentUser;
     NavController navController;
+
     SwipeRefreshLayout swipeRefresh;
+    ProfileListRvViewModel profileViewModel;
+    ProfileAdapter profileAdapter;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
+        profileViewModel = new ViewModelProvider(this).get(ProfileListRvViewModel.class);
     }
 
     @Override
@@ -119,6 +130,33 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
         pd = new ProgressDialog(getActivity());
         userId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
         setUser(userId);
+
+        RecyclerView list = view.findViewById(R.id.postlist_rv);
+        list.setHasFixedSize(true);
+
+        list.setLayoutManager(new LinearLayoutManager(getContext()));
+        profileAdapter = new ProfileAdapter();
+        list.setAdapter(profileAdapter);
+        profileAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(View v,int position) {
+                Log.d("TAG",profileViewModel.getData().getValue().toString());
+                String stId = profileViewModel.getData().getValue().get(position).getUid();
+                Log.d("TAG",String.format("%s",stId));
+
+                //Navigation.findNavController(v).navigate(StudentListRvFragmentDirections.actionStudentListRvFragmentToStudentDetailsFragment(stId));
+            }
+        });
+
+        profileViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
+        swipeRefresh.setRefreshing(PostModelStorageFunctions.instance.getUserPostListLoadingState().getValue() == PostModelStorageFunctions.PostListLoadingState.loading);
+        PostModelStorageFunctions.instance.getUserPostListLoadingState().observe(getViewLifecycleOwner(),postListLoadingState  -> {
+            if (postListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
+                swipeRefresh.setRefreshing(true);
+            }else{
+                swipeRefresh.setRefreshing(false);
+            }
+        });
     }
 
     private void initUserDetails() {
@@ -194,7 +232,7 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
                 if (!TextUtils.isEmpty(value)) {
                     pd.show();
                     currentUser.setFullName(value);
-                    UserModelStorageFunctions.instance.updateUser(currentUser,() -> {
+                    UserModelStorageFunctions.instance.updateUser(currentUser, () -> {
                         pd.dismiss();
                         navController.navigate(R.id.profileFragment);
                     });
@@ -216,10 +254,10 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
 
     private void updateProfilePic() {
         pd.show();
-        Bitmap profileImage = ((BitmapDrawable)avatarImage.getDrawable()).getBitmap();
+        Bitmap profileImage = ((BitmapDrawable) avatarImage.getDrawable()).getBitmap();
         UserModelStorageFunctions.instance.uploadUserPhoto(profileImage, currentUser.getUid() + ".jpg", (url) -> {
             currentUser.setProfilePhoto(url);
-            UserModelStorageFunctions.instance.updateUser(currentUser,() -> {
+            UserModelStorageFunctions.instance.updateUser(currentUser, () -> {
                 pd.dismiss();
                 navController.navigate(R.id.profileFragment);
             });
@@ -244,5 +282,93 @@ public class ProfileFragment extends Fragment implements PicturePickDialog.Notic
         } else {
             Toast.makeText(getActivity(), "error picking photo", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    private void refresh() {
+        profileAdapter.notifyDataSetChanged();
+    }
+
+    class ProfileViewHolder extends RecyclerView.ViewHolder {
+        ImageView postImv;
+        TextView contentTv;
+        TextView likeCountTv;
+        TextView commentCountTv;
+        Button likeBtn;
+
+        public ProfileViewHolder(@NonNull View itemView, OnItemClickListener listener) {
+            super(itemView);
+            postImv = itemView.findViewById(R.id.post_row_post_imgv);
+            contentTv = itemView.findViewById(R.id.post_row_content_tv);
+            likeCountTv = itemView.findViewById(R.id.post_row_like_count_tv);
+            commentCountTv = itemView.findViewById(R.id.post_comments_count_tv);
+            likeBtn = itemView.findViewById(R.id.post_row_like_btn);
+
+        }
+
+
+        void bind(Post post) {
+            contentTv.setText(post.getContent());
+            Integer likeNum = post.getLikeCount();
+            likeCountTv.setText(likeNum.toString());
+            commentCountTv.setText(String.valueOf(post.getCommentList().size()));
+            postImv.setImageResource(R.drawable.avatar);
+            if (post.getPhotoUrl() != null) {
+                Picasso.get()
+                        .load(post.getPhotoUrl())
+                        .into(postImv);
+            }
+
+            likeBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    post.addLike(currentUser.getUid());
+                    likeCountTv.setText(String.valueOf(post.getLikeCount()));
+                }
+            });
+        }
+    }
+
+    interface OnItemClickListener{
+        void onItemClick(View v,int position);
+    }
+
+    class ProfileAdapter extends RecyclerView.Adapter<ProfileViewHolder> {
+        OnItemClickListener listener;
+        public void setOnItemClickListener(OnItemClickListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return position;
+        }
+
+        @NonNull
+        @Override
+        public ProfileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = getLayoutInflater().inflate(R.layout.post_list_profile_row,parent,false);
+            return new ProfileViewHolder(view,listener);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ProfileViewHolder holder, int position) {
+            Post post = profileViewModel.getData().getValue().get(position);
+            holder.bind(post);
+        }
+
+        @Override
+        public int getItemCount() {
+            if(profileViewModel.getData().getValue() == null) {
+                return 0;
+            }
+            return profileViewModel.getData().getValue().size();
+        }
+
     }
 }

@@ -34,7 +34,7 @@ import java.util.Objects;
 
 public class ModelFirebase {
     public static final String USERS_COLLECTION_NAME = "users";
-    public static final String POSTS_COLLECTION_NAME = "posts";
+    public static final String POSTS_COLLECTION_NAME = "Posts";
     public static final String USERS_IMAGE_FOLDER = "users_images/";
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -57,6 +57,10 @@ public class ModelFirebase {
         void onComplete(List<Post> list);
     }
 
+    public interface getPostsByUserIDListener{
+        void onComplete(List<Post> list);
+    }
+
     public interface getAllCommentsListener{
         void onComplete(List<Comment> list);
     }
@@ -72,6 +76,7 @@ public class ModelFirebase {
     public void getAllPosts(Long lastUpdateDate, getAllPostsListener listener){
         db.collection(POSTS_COLLECTION_NAME)
                 .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
+                .whereEqualTo("isDeleted",false)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                        @Override
@@ -205,9 +210,11 @@ public class ModelFirebase {
                 });
     }
 
-    public void getPostsByUserId(String userId, PostModelStorageFunctions.getPostsByUserID listener) {
+    public void getPostsByUserId(String userId,Long lastUpdateDate, getPostsByUserIDListener listener) {
         db.collection(POSTS_COLLECTION_NAME)
+            .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
             .whereEqualTo("userId",userId)
+            .whereEqualTo("isDeleted",false)
             .get()
             .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
@@ -223,6 +230,11 @@ public class ModelFirebase {
                 }
             });
     }
+
+    public void deletePost(Post post, PostModelStorageFunctions.deletePostListener listener){
+
+    }
+
     public void addUser(User user,String password, UserModelStorageFunctions.addUserListener listener) {
         mAuth.createUserWithEmailAndPassword(user.getEmail(),password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {

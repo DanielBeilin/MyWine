@@ -28,18 +28,24 @@ public class PostModelStorageFunctions {
     }
 
     MutableLiveData<PostListLoadingState> postListLoadingState = new MutableLiveData<PostListLoadingState>();
+    MutableLiveData<PostListLoadingState> userPostListLoadingState = new MutableLiveData<PostListLoadingState>();
 
     public LiveData<PostListLoadingState> getPostListLoadingState() {
         return postListLoadingState;
+    }
+    public LiveData<PostListLoadingState> getUserPostListLoadingState() {
+        return userPostListLoadingState;
     }
 
     ModelFirebase modelFirebase = new ModelFirebase();
 
     private PostModelStorageFunctions() {
         postListLoadingState.setValue(PostListLoadingState.loaded);
+        userPostListLoadingState.setValue(PostListLoadingState.loaded);
     }
 
     MutableLiveData<List<Post>> postList = new MutableLiveData<List<Post>>();
+    MutableLiveData<List<Post>> userPostList = new MutableLiveData<List<Post>>();
 
     public LiveData<List<Post>> getAllPosts() {
         if (postList.getValue() == null) {
@@ -48,6 +54,14 @@ public class PostModelStorageFunctions {
 
         return postList;
     }
+
+    public LiveData<List<Post>> getPostsByUserID() {
+        if (userPostList.getValue() == null ){
+            refreshUserPostList();
+        }
+        return userPostList;
+    }
+
 
     public void refreshPostList() {
         postListLoadingState.setValue(PostListLoadingState.loading);
@@ -93,6 +107,51 @@ public class PostModelStorageFunctions {
         });
     }
 
+    public void refreshUserPostList() {
+        userPostListLoadingState.setValue(PostListLoadingState.loading);
+        String currentUserId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
+
+        Long lastUpdateDate = MyApplication.getContext()
+                .getSharedPreferences("TAG", Context.MODE_PRIVATE)
+                .getLong("PostLastUpdateDate", 0);
+
+        executor.execute(() -> {
+            List<Post> ptList = AppLocalDB.db.PostDao().getAllByUser(currentUserId);
+            userPostList.postValue(ptList);
+        });
+
+        modelFirebase.getPostsByUserId(currentUserId,lastUpdateDate, new ModelFirebase.getPostsByUserIDListener() {
+            @Override
+            public void onComplete(List<Post> list) {
+                // add all records to the local db
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        Long lastUpdateDate = new Long(0);
+                        Log.d("TAG", "fb returned " + list.size());
+                        for (Post post : list) {
+                            AppLocalDB.db.PostDao().insertAll(post);
+                            if (lastUpdateDate < post.getUpdateDate()) {
+                                lastUpdateDate = post.getUpdateDate();
+                            }
+                        }
+                        // update last local update date
+                        MyApplication.getContext()
+                                .getSharedPreferences("TAG", Context.MODE_PRIVATE)
+                                .edit()
+                                .putLong("PostLastUpdateDate", lastUpdateDate)
+                                .commit();
+
+                        //return all data to caller
+                        List<Post> ptList = AppLocalDB.db.PostDao().getAll();
+                        userPostList.postValue(ptList);
+                        userPostListLoadingState.postValue(PostListLoadingState.loaded);
+                    }
+                });
+            }
+        });
+    }
+
     public interface getAllPostsListener{
         void onComplete(List<Post> list);
     }
@@ -101,14 +160,21 @@ public class PostModelStorageFunctions {
         void onComplete(Post post);
     }
 
+    public interface deletePostListener {
+        void onComplete();
+    }
+
+    public void deletePost(Post post, deletePostListener listener){
+        modelFirebase.deletePost(post, () ->{
+            listener.onComplete();
+            refreshPostList();
+        });
+    }
+
     public interface getPostsByUserID {
         void onComplete(List<Post> postList);
     }
 
-    public List<Post> getPostsByUserID(String userId, getPostsByUserID listener) {
-        modelFirebase.getPostsByUserId(userId,listener);
-        return null;
-    }
 
     public Post getPostById(String postId, GetPostById listener) {
         modelFirebase.getPostById(postId,listener);

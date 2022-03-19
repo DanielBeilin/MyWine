@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/post_row"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="4dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="8dp"
+    app:cardPreventCornerOverlap="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/post_row_like_btn"
+            android:layout_width="57dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="20dp"
+            android:background="@drawable/like_foreground"
+            app:layout_constraintBottom_toBottomOf="@+id/post_row_comment_imgv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/post_row_content_tv"
+            app:layout_constraintVertical_bias="1.0"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <ImageView
+            android:id="@+id/post_row_comment_imgv"
+            android:layout_width="38dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/post_row_content_tv"
+            app:srcCompat="@drawable/comments_icon" />
+
+        <ImageView
+            android:id="@+id/post_row_post_imgv"
+            android:layout_width="98dp"
+            android:layout_height="93dp"
+            android:layout_marginTop="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/avatar" />
+
+        <TextView
+            android:id="@+id/post_row_content_tv"
+            android:layout_width="378dp"
+            android:layout_height="81dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="14dp"
+            android:text="TextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/post_row_post_imgv" />
+
+        <TextView
+            android:id="@+id/post_row_like_count_tv"
+            android:layout_width="48dp"
+            android:layout_height="46dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="4dp"
+            android:text="TextView"
+            app:layout_constraintBottom_toBottomOf="@+id/post_row_like_btn"
+            app:layout_constraintStart_toEndOf="@+id/post_row_like_btn" />
+
+        <TextView
+            android:id="@+id/post_comments_count_tv"
+            android:layout_width="52dp"
+            android:layout_height="53dp"
+            android:layout_marginEnd="4dp"
+            android:text="TextView"
+            app:layout_constraintBottom_toBottomOf="@+id/post_row_comment_imgv"
+            app:layout_constraintEnd_toStartOf="@+id/post_row_comment_imgv" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginTop="7dp"
+            android:background="#5E1212"
+            app:layout_constraintEnd_toEndOf="@+id/post_row_comment_imgv"
+            app:layout_constraintStart_toStartOf="@+id/post_row_like_btn"
+            app:layout_constraintTop_toBottomOf="@+id/post_row_like_btn" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

@@ -94,8 +94,8 @@ public class FeedFragment extends Fragment {
         setHasOptionsMenu(true);
         PostViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
         swipeRefresh.setRefreshing(PostModelStorageFunctions.instance.getPostListLoadingState().getValue() == PostModelStorageFunctions.PostListLoadingState.loading);
-        PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), studentListLoadingState -> {
-            if (studentListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
+        PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), postListLoadingState -> {
+            if (postListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
                 swipeRefresh.setRefreshing(true);
             }else{
                 swipeRefresh.setRefreshing(false);
