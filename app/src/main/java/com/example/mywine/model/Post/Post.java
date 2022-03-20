@@ -181,7 +181,7 @@ public class Post {
         String userId = (String) json.get("userId");
         String title = (String) json.get("title");
         String content = (String) json.get("content");
-        Integer likeCount =  Integer.parseInt((String) json.get("likeCount"));
+        Integer likeCount =  ((Long) json.get("likeCount")).intValue();
         Timestamp ts = (Timestamp) json.get("updateDate");
         Long updateDate = ts.getSeconds();
         ArrayList<String> commentList = new ArrayList<String>

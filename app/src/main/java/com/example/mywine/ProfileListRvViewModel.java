@@ -11,6 +11,6 @@ import java.util.List;
 public class ProfileListRvViewModel extends ViewModel {
     LiveData<List<Post>> data;
 
-    public ProfileListRvViewModel() { data = PostModelStorageFunctions.instance.getPostsByUserID();}
+    public ProfileListRvViewModel() { data = PostModelStorageFunctions.instance.getAllPosts();}
     public LiveData<List<Post>> getData() { return data; }
 }

@@ -34,8 +34,9 @@ import java.util.Objects;
 
 public class ModelFirebase {
     public static final String USERS_COLLECTION_NAME = "users";
-    public static final String POSTS_COLLECTION_NAME = "posts";
+    public static final String POSTS_COLLECTION_NAME = "Posts";
     public static final String USERS_IMAGE_FOLDER = "users_images/";
+    public static final String POSTS_IMAGE_FOLDER = "posts_images/";
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -232,6 +233,14 @@ public class ModelFirebase {
     }
 
     public void deletePost(Post post, PostModelStorageFunctions.deletePostListener listener){
+        Map<String, Object> jsonPost = post.toJson();
+        jsonPost.put("isDeleted",true);
+
+        db.collection(POSTS_COLLECTION_NAME)
+                .document(post.getUid())
+                .update(jsonPost)
+                .addOnSuccessListener(unused -> listener.onComplete())
+                .addOnFailureListener(e ->listener.onComplete());
 
     }
 
@@ -262,6 +271,14 @@ public class ModelFirebase {
                 .addOnFailureListener(e -> listener.onComplete());
     }
 
+    public void updatePost(Post post, PostModelStorageFunctions.updatePostListener listener) {
+        Map<String, Object> jsonPost = post.toJson();
+        db.collection(POSTS_COLLECTION_NAME)
+                .document(post.getUid())
+                .update(jsonPost)
+                .addOnSuccessListener(unused -> listener.onComplete())
+                .addOnFailureListener(e ->listener.onComplete());
+    }
     public void signIn(String email, String password, SignInOnSuccessListener onSuccessListener, SignInOnFailureListener onFailureListener) {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(task -> {

@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import androidx.core.os.HandlerCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Transformations;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.util.Log;
 
 import com.example.mywine.MyApplication;
 import com.example.mywine.model.Post.Post;
+import com.example.mywine.model.User.User;
 
 public class PostModelStorageFunctions {
     public static final PostModelStorageFunctions instance = new PostModelStorageFunctions();
@@ -56,12 +58,26 @@ public class PostModelStorageFunctions {
     }
 
     public LiveData<List<Post>> getPostsByUserID() {
-        if (userPostList.getValue() == null ){
+        if (postList.getValue() == null ){
             refreshUserPostList();
         }
         return userPostList;
     }
 
+    public interface addPostListener {
+        void onComplete();
+    }
+
+    public interface updatePostListener {
+        void onComplete();
+    }
+
+    public void updatePost(Post post, updatePostListener listener) {
+        modelFirebase.updatePost(post, () -> {
+            listener.onComplete();
+            refreshPostList();
+        });
+    }
 
     public void refreshPostList() {
         postListLoadingState.setValue(PostListLoadingState.loading);
@@ -108,7 +124,7 @@ public class PostModelStorageFunctions {
     }
 
     public void refreshUserPostList() {
-        userPostListLoadingState.setValue(PostListLoadingState.loading);
+        postListLoadingState.setValue(PostListLoadingState.loading);
         String currentUserId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
 
         Long lastUpdateDate = MyApplication.getContext()
@@ -117,7 +133,7 @@ public class PostModelStorageFunctions {
 
         executor.execute(() -> {
             List<Post> ptList = AppLocalDB.db.PostDao().getAllByUser(currentUserId);
-            userPostList.postValue(ptList);
+            postList.postValue(ptList);
         });
 
         modelFirebase.getPostsByUserId(currentUserId,lastUpdateDate, new ModelFirebase.getPostsByUserIDListener() {
@@ -143,9 +159,9 @@ public class PostModelStorageFunctions {
                                 .commit();
 
                         //return all data to caller
-                        List<Post> ptList = AppLocalDB.db.PostDao().getAll();
-                        userPostList.postValue(ptList);
-                        userPostListLoadingState.postValue(PostListLoadingState.loaded);
+                        List<Post> ptList = AppLocalDB.db.PostDao().getAllByUser(currentUserId);
+                        postList.postValue(ptList);
+                        postListLoadingState.postValue(PostListLoadingState.loaded);
                     }
                 });
             }
@@ -165,6 +181,9 @@ public class PostModelStorageFunctions {
     }
 
     public void deletePost(Post post, deletePostListener listener){
+        executor.execute(()->{
+            AppLocalDB.db.PostDao().deletePost(true,post.getUid());
+        });
         modelFirebase.deletePost(post, () ->{
             listener.onComplete();
             refreshPostList();
@@ -181,9 +200,6 @@ public class PostModelStorageFunctions {
         return null;
     }
 
-    public interface addPostListener {
-        void onComplete();
-    }
 
     public interface addPostImageListener {
         void onComplete(String url);
