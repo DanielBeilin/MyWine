@@ -16,51 +16,28 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/post_row_user_imgv"
-            android:layout_width="61dp"
-            android:layout_height="62dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.02"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize8Percent"
-            app:srcCompat="@drawable/avatar" />
-
-        <TextView
-            android:id="@+id/post_row_name_tv"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="TextView"
-            android:textSize="30sp"
-            app:layout_constraintStart_toEndOf="@+id/post_row_user_imgv"
-            app:layout_constraintTop_toTopOf="@+id/post_row_user_imgv" />
+        android:layout_height="325dp">
 
         <Button
             android:id="@+id/post_row_like_btn"
             android:layout_width="38dp"
             android:layout_height="50dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="28dp"
             android:background="@drawable/like_foreground"
+            app:layout_constraintBottom_toBottomOf="@+id/post_row_like_count_tv"
             app:layout_constraintEnd_toStartOf="@+id/post_row_like_count_tv"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/post_row_content_tv" />
+            app:layout_constraintTop_toBottomOf="@+id/post_row_content_tv"
+            app:layout_constraintVertical_bias="0.894"
+            tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageView
             android:id="@+id/post_row_comment_imgv"
             android:layout_width="38dp"
             android:layout_height="50dp"
             android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="@+id/post_comments_count_tv"
+            app:layout_constraintBottom_toTopOf="@+id/view"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/post_comments_count_tv"
@@ -68,19 +45,19 @@
 
         <ImageView
             android:id="@+id/post_row_post_imgv"
-            android:layout_width="153dp"
-            android:layout_height="147dp"
-            android:layout_marginTop="27dp"
+            android:layout_width="98dp"
+            android:layout_height="93dp"
+            android:layout_marginTop="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.496"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/post_row_name_tv"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/avatar" />
 
         <TextView
             android:id="@+id/post_row_content_tv"
-            android:layout_width="0dp"
-            android:layout_height="136dp"
+            android:layout_width="378dp"
+            android:layout_height="81dp"
             android:layout_marginStart="10dp"
             android:layout_marginTop="28dp"
             android:layout_marginEnd="14dp"
@@ -95,7 +72,7 @@
             android:layout_height="46dp"
             android:layout_marginBottom="4dp"
             android:text="TextView"
-            app:layout_constraintBottom_toBottomOf="@+id/post_row_like_btn"
+            app:layout_constraintBottom_toBottomOf="@+id/post_delete_btn"
             app:layout_constraintEnd_toStartOf="@+id/post_delete_btn"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/post_row_like_btn" />
@@ -105,40 +82,39 @@
             android:layout_width="48dp"
             android:layout_height="46dp"
             android:text="TextView"
-            app:layout_constraintBottom_toBottomOf="@+id/post_edit_btn"
+            app:layout_constraintBottom_toBottomOf="@+id/post_row_comment_imgv"
             app:layout_constraintEnd_toStartOf="@+id/post_row_comment_imgv"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/post_edit_btn" />
 
-        <View
-            android:id="@+id/view"
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:layout_marginTop="7dp"
-            android:background="#5E1212"
-            app:layout_constraintEnd_toEndOf="@+id/post_row_comment_imgv"
-            app:layout_constraintStart_toStartOf="@+id/post_row_like_btn"
-            app:layout_constraintTop_toBottomOf="@+id/post_row_like_btn" />
-
         <Button
             android:id="@+id/post_delete_btn"
-            android:layout_width="47dp"
-            android:layout_height="48dp"
+            android:layout_width="55dp"
+            android:layout_height="53dp"
             android:background="@drawable/delete_foreground"
-            app:layout_constraintBottom_toBottomOf="@+id/post_row_like_count_tv"
+            app:layout_constraintBottom_toBottomOf="@+id/post_edit_btn"
             app:layout_constraintEnd_toStartOf="@+id/post_edit_btn"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/post_row_like_count_tv" />
 
         <Button
             android:id="@+id/post_edit_btn"
-            android:layout_width="44dp"
-            android:layout_height="47dp"
+            android:layout_width="50dp"
+            android:layout_height="51dp"
             android:background="@drawable/edit_foreground"
-            app:layout_constraintBottom_toBottomOf="@+id/post_delete_btn"
+            app:layout_constraintBottom_toBottomOf="@+id/post_comments_count_tv"
             app:layout_constraintEnd_toStartOf="@+id/post_comments_count_tv"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/post_delete_btn" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#5E1212"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:layout_editor_absoluteX="-14dp" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

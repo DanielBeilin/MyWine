@@ -2,56 +2,58 @@ package com.example.mywine;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.NavHost;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.mywine.model.Comment.Comment;
-import com.example.mywine.model.CommentModelStorageFunctions;
-import com.example.mywine.model.ModelFirebase;
+import com.example.mywine.model.PicturePickDialog;
 import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.PostModelStorageFunctions;
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.UserModelStorageFunctions;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.type.TimeOfDayOrBuilder;
 import com.squareup.picasso.Picasso;
-import androidx.navigation.NavController;
-import androidx.navigation.NavHost;
-import androidx.navigation.ui.NavigationUI;
 
-public class FeedFragment extends Fragment {
+public class FeedFragment extends PicturePickDialog {
     PostListRvViewModel PostViewModel;
     FeedAdapter feedAdapter;
     SwipeRefreshLayout swipeRefresh;
     FirebaseUser user;
-    Bundle bundle;
+    ProgressDialog pd;
+    public static String TAG = "PicturePickDialog";
+
+    private static final int CAMERA_CHOSEN = 0;
+    private static final int GALLERY_CHOSEN = 1;
+    private static final int CAMERA_REQUEST = 100;
+    private static final int STORAGE_REQUEST = 200;
+    public static final int IMAGE_PICK_GALLERY_REQUEST_CODE = 300;
+    public static final int IMAGE_PICK_CAMERA_REQUEST_CODE = 400;
+    String cameraPermission[];
+    String storagePermission[];
 
 
     @Override
@@ -65,6 +67,9 @@ public class FeedFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         user = UserModelStorageFunctions.instance.getLoggedInUser();
+        pd = new ProgressDialog(getActivity());
+        cameraPermission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         View view = inflater.inflate(R.layout.feed_fragment,container,false);
 
@@ -94,8 +99,8 @@ public class FeedFragment extends Fragment {
         setHasOptionsMenu(true);
         PostViewModel.getData().observe(getViewLifecycleOwner(), list1 -> refresh());
         swipeRefresh.setRefreshing(PostModelStorageFunctions.instance.getPostListLoadingState().getValue() == PostModelStorageFunctions.PostListLoadingState.loading);
-        PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), studentListLoadingState -> {
-            if (studentListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
+        PostModelStorageFunctions.instance.getPostListLoadingState().observe(getViewLifecycleOwner(), postListLoadingState -> {
+            if (postListLoadingState == PostModelStorageFunctions.PostListLoadingState.loading){
                 swipeRefresh.setRefreshing(true);
             }else{
                 swipeRefresh.setRefreshing(false);
@@ -107,6 +112,73 @@ public class FeedFragment extends Fragment {
 
     }
 
+    private void showEditPostDialog(Post post) {
+        String options[] = {"edit body", "edit photo"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Choose Action");
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    // edit name
+                    pd.setMessage("updating name");
+                    showFieldUpdateDialog(post);
+                } else if (which == 1) {
+                    // edit profile photo
+                    pd.setMessage("updating profile picture");
+                    showPicturePickDialog();
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+    public void showPicturePickDialog() {
+    }
+
+    private void showFieldUpdateDialog(Post post) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Update Content");
+
+        LinearLayout linearLayout = new LinearLayout(getActivity());
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setPadding(10, 10, 10, 10);
+        EditText editText = new EditText(getActivity());
+        editText.setText(post.getContent());
+        linearLayout.addView(editText);
+
+        builder.setView(linearLayout);
+
+        // update
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String value = editText.getText().toString().trim();
+                if (!TextUtils.isEmpty(value)) {
+                    pd.show();
+                    post.setContent(value);
+                    PostModelStorageFunctions.instance.updatePost(post, () -> {
+                        pd.dismiss();
+                        //navController.navigate(R.id.profileFragment);
+                    });
+                } else {
+                    Toast.makeText(getActivity(), "Please enter Content" , Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        // cancel
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builder.create().show();
+    }
+
+
+
     private void refresh() { feedAdapter.notifyDataSetChanged(); }
 
     class FeedViewHolder extends RecyclerView.ViewHolder{
@@ -117,6 +189,8 @@ public class FeedFragment extends Fragment {
         TextView authorTv;
         TextView commentCountTv;
         Button likeBtn;
+        Button deleteBtn;
+        Button editBtn;
 
         public FeedViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
@@ -127,6 +201,10 @@ public class FeedFragment extends Fragment {
             userImv = itemView.findViewById(R.id.post_row_user_imgv);
             commentCountTv = itemView.findViewById(R.id.post_comments_count_tv);
             likeBtn = itemView.findViewById(R.id.post_row_like_btn);
+            deleteBtn = itemView.findViewById(R.id.post_delete_btn);
+            editBtn = itemView.findViewById(R.id.post_edit_btn);
+            deleteBtn.setVisibility(View.VISIBLE);
+            editBtn.setVisibility(View.VISIBLE);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -140,39 +218,57 @@ public class FeedFragment extends Fragment {
 
         }
 
-        void bind(Post post){
-            contentTv.setText(post.getContent());
-            UserModelStorageFunctions.instance.getUserById(post.getUserId(), new UserModelStorageFunctions.GetUserById() {
-                @Override
-                public void onComplete(User user) {
-                    authorTv.setText(user.getFullName());
-                    userImv.setImageResource(R.drawable.avatar);
-                    if (user.getProfilePhoto() != null) {
-                        Picasso.get()
-                                .load(user.getProfilePhoto())
-                                .into(userImv);
+        void bind(Post post) {
+                if (!user.getUid().equals(post.getUserId())) {
+                    deleteBtn.setVisibility(View.GONE);
+                    editBtn.setVisibility(View.GONE);
+                }
+                contentTv.setText(post.getContent());
+                UserModelStorageFunctions.instance.getUserById(post.getUserId(), new UserModelStorageFunctions.GetUserById() {
+                    @Override
+                    public void onComplete(User user) {
+                        authorTv.setText(user.getFullName());
+                        userImv.setImageResource(R.drawable.avatar);
+                        if (user.getProfilePhoto() != null) {
+                            Picasso.get()
+                                    .load(user.getProfilePhoto())
+                                    .into(userImv);
+                        }
                     }
+                });
+                Integer likeNum = post.getLikeCount();
+                likeCountTv.setText(likeNum.toString());
+                commentCountTv.setText(String.valueOf(post.getCommentList().size()));
+                postImv.setImageResource(R.drawable.avatar);
+                if (post.getPhotoUrl() != null) {
+                    Picasso.get()
+                            .load(post.getPhotoUrl())
+                            .into(postImv);
                 }
-            });
-            Integer likeNum = post.getLikeCount();
-            likeCountTv.setText(likeNum.toString());
-            commentCountTv.setText(String.valueOf(post.getCommentList().size()));
-            postImv.setImageResource(R.drawable.avatar);
-            if (post.getPhotoUrl() != null) {
-                Picasso.get()
-                        .load(post.getPhotoUrl())
-                        .into(postImv);
+
+                likeBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        post.addLike(user.getUid());
+                        likeCountTv.setText(String.valueOf(post.getLikeCount()));
+                    }
+                });
+
+                deleteBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PostModelStorageFunctions.instance.deletePost(post, () -> {
+                        });
+                    }
+                });
+
+                editBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showEditPostDialog(post);
+                    }
+                });
             }
-
-            likeBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    post.addLike(user.getUid());
-                    likeCountTv.setText(String.valueOf(post.getLikeCount()));
-                }
-            });
-        }
-
     }
 
 
@@ -180,7 +276,7 @@ public class FeedFragment extends Fragment {
         void onItemClick(View v,int position);
     }
 
-    class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder>{
+    class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder>  {
 
         OnItemClickListener listener;
         public void setOnItemClickListener(OnItemClickListener listener) {
@@ -218,20 +314,4 @@ public class FeedFragment extends Fragment {
             return PostViewModel.getData().getValue().size();
         }
     }
-
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.post_list_menu,menu);
-    }
-
-    // TODO: Check if correct
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.addPost){
-            Log.d("TAG","ADD...");
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
 }

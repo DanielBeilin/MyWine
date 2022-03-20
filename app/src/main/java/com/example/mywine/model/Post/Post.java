@@ -34,6 +34,7 @@ public class Post {
     String content = "";
     String photoUrl = "";
     Integer likeCount = 0;
+    Boolean isDeleted = false;
 
     @TypeConverters(Converters.class)
     ArrayList<String> LikedBy = new ArrayList<String>();
@@ -54,13 +55,15 @@ public class Post {
                 String userId,
                 String content,
                 String photoUrl,
-                Integer likeCount) {
+                Integer likeCount,
+                Boolean isDeleted) {
         this.Uid = UUID.randomUUID().toString();
         this.userId = userId;
         this.title = title;
         this.content = content;
         this.photoUrl = photoUrl;
         this.likeCount = likeCount;
+        this.isDeleted = isDeleted;
     }
 
     @NonNull
@@ -120,6 +123,14 @@ public class Post {
         this.updateDate = updateDate;
     }
 
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
+    }
+
     public void addLike(String userID) {
         if(LikedBy.contains(userID)) {
             this.likeCount -= 1;
@@ -162,6 +173,7 @@ public class Post {
         json.put("commentList", TextUtils.join(", ", CommentList));
         json.put("likedBy", TextUtils.join(", ", LikedBy));
         json.put("photoUrl", photoUrl);
+        json.put("isDeleted",isDeleted);
         return json;
     }
 
@@ -169,7 +181,7 @@ public class Post {
         String userId = (String) json.get("userId");
         String title = (String) json.get("title");
         String content = (String) json.get("content");
-        Integer likeCount =  Integer.parseInt((String) json.get("likeCount"));
+        Integer likeCount =  ((Long) json.get("likeCount")).intValue();
         Timestamp ts = (Timestamp) json.get("updateDate");
         Long updateDate = ts.getSeconds();
         ArrayList<String> commentList = new ArrayList<String>
@@ -177,7 +189,8 @@ public class Post {
         ArrayList<String> likedBy = new ArrayList<String>
                 (Arrays.asList(((String) Objects.requireNonNull(json.get("likedBy"))).split(",")));
         String photoUrl = (String) json.get("photoUrl");
-        Post post = new Post(title,userId, content,photoUrl,likeCount);
+        Boolean isDeleted = (Boolean) json.get("isDeleted");
+        Post post = new Post(title,userId, content,photoUrl,likeCount,isDeleted);
         post.setUid((String) json.get("Uid"));
         post.setUpdateDate(updateDate);
         post.setCommentList(commentList);

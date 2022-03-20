@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "5aec8146650c79e5ac4230f7fb20973d",
+    "identityHash": "7fbe97266191b12c137cf7796e991a57",
     "entities": [
       {
         "tableName": "User",
@@ -50,7 +50,7 @@
       },
       {
         "tableName": "Post",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`Uid` TEXT NOT NULL, `title` TEXT, `userId` TEXT, `content` TEXT, `photoUrl` TEXT, `likeCount` INTEGER, `LikedBy` TEXT, `CommentList` TEXT, `updateDate` INTEGER, PRIMARY KEY(`Uid`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`Uid` TEXT NOT NULL, `title` TEXT, `userId` TEXT, `content` TEXT, `photoUrl` TEXT, `likeCount` INTEGER, `isDeleted` INTEGER, `LikedBy` TEXT, `CommentList` TEXT, `updateDate` INTEGER, PRIMARY KEY(`Uid`))",
         "fields": [
           {
             "fieldPath": "Uid",
@@ -89,6 +89,12 @@
             "notNull": false
           },
           {
+            "fieldPath": "isDeleted",
+            "columnName": "isDeleted",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
             "fieldPath": "LikedBy",
             "columnName": "LikedBy",
             "affinity": "TEXT",
@@ -120,7 +126,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5aec8146650c79e5ac4230f7fb20973d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7fbe97266191b12c137cf7796e991a57')"
     ]
   }
 }
