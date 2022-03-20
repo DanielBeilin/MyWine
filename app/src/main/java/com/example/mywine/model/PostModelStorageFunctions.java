@@ -58,7 +58,7 @@ public class PostModelStorageFunctions {
     }
 
     public LiveData<List<Post>> getPostsByUserID() {
-        if (postList.getValue() == null ){
+        if (userPostList.getValue() == null ){
             refreshUserPostList();
         }
         return userPostList;
@@ -76,6 +76,7 @@ public class PostModelStorageFunctions {
         modelFirebase.updatePost(post, () -> {
             listener.onComplete();
             refreshPostList();
+            refreshUserPostList();
         });
     }
 
@@ -124,7 +125,7 @@ public class PostModelStorageFunctions {
     }
 
     public void refreshUserPostList() {
-        postListLoadingState.setValue(PostListLoadingState.loading);
+        userPostListLoadingState.setValue(PostListLoadingState.loading);
         String currentUserId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
 
         Long lastUpdateDate = MyApplication.getContext()
@@ -133,7 +134,7 @@ public class PostModelStorageFunctions {
 
         executor.execute(() -> {
             List<Post> ptList = AppLocalDB.db.PostDao().getAllByUser(currentUserId);
-            postList.postValue(ptList);
+            userPostList.postValue(ptList);
         });
 
         modelFirebase.getPostsByUserId(currentUserId,lastUpdateDate, new ModelFirebase.getPostsByUserIDListener() {
@@ -160,8 +161,8 @@ public class PostModelStorageFunctions {
 
                         //return all data to caller
                         List<Post> ptList = AppLocalDB.db.PostDao().getAllByUser(currentUserId);
-                        postList.postValue(ptList);
-                        postListLoadingState.postValue(PostListLoadingState.loaded);
+                        userPostList.postValue(ptList);
+                        userPostListLoadingState.postValue(PostListLoadingState.loaded);
                     }
                 });
             }
@@ -187,6 +188,7 @@ public class PostModelStorageFunctions {
         modelFirebase.deletePost(post, () ->{
             listener.onComplete();
             refreshPostList();
+            refreshUserPostList();
         });
     }
 
@@ -209,6 +211,7 @@ public class PostModelStorageFunctions {
         modelFirebase.addPost(post, () -> {
             listener.onComplete();
             refreshPostList();
+            refreshUserPostList();
         });
     }
 
