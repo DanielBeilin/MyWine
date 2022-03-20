@@ -3,17 +3,21 @@ package com.example.mywine;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -38,23 +42,12 @@ import com.example.mywine.model.UserModelStorageFunctions;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 
-public class FeedFragment extends PicturePickDialog {
+public class FeedFragment extends Fragment {
     PostListRvViewModel PostViewModel;
     FeedAdapter feedAdapter;
     SwipeRefreshLayout swipeRefresh;
     FirebaseUser user;
     ProgressDialog pd;
-    public static String TAG = "PicturePickDialog";
-
-    private static final int CAMERA_CHOSEN = 0;
-    private static final int GALLERY_CHOSEN = 1;
-    private static final int CAMERA_REQUEST = 100;
-    private static final int STORAGE_REQUEST = 200;
-    public static final int IMAGE_PICK_GALLERY_REQUEST_CODE = 300;
-    public static final int IMAGE_PICK_CAMERA_REQUEST_CODE = 400;
-    String cameraPermission[];
-    String storagePermission[];
-
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -68,8 +61,6 @@ public class FeedFragment extends PicturePickDialog {
                              @Nullable Bundle savedInstanceState) {
         user = UserModelStorageFunctions.instance.getLoggedInUser();
         pd = new ProgressDialog(getActivity());
-        cameraPermission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         View view = inflater.inflate(R.layout.feed_fragment,container,false);
 
@@ -126,15 +117,13 @@ public class FeedFragment extends PicturePickDialog {
                 } else if (which == 1) {
                     // edit profile photo
                     pd.setMessage("updating profile picture");
-                    showPicturePickDialog();
+                    //showDialog(getView());
                 }
             }
         });
         builder.create().show();
     }
 
-    public void showPicturePickDialog() {
-    }
 
     private void showFieldUpdateDialog(Post post) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -176,7 +165,6 @@ public class FeedFragment extends PicturePickDialog {
 
         builder.create().show();
     }
-
 
 
     private void refresh() { feedAdapter.notifyDataSetChanged(); }
@@ -265,7 +253,8 @@ public class FeedFragment extends PicturePickDialog {
                 editBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        showEditPostDialog(post);
+                        String postId = post.getUid();
+                        Navigation.findNavController(v).navigate(FeedFragmentDirections.actionFeedFragmentToEditPostFragment(postId));
                     }
                 });
             }

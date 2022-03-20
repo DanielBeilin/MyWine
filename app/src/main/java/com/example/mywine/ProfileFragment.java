@@ -26,6 +26,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -290,70 +291,7 @@ public class ProfileFragment extends PicturePickDialog {
         }
     }
 
-    private void showEditPostDialog(Post post) {
-        String options[] = {"edit body", "edit photo"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Choose Action");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    // edit name
-                    pd.setMessage("updating name");
-                    showPostFieldUpdateDialog(post);
-                } else if (which == 1) {
-                    // edit profile photo
-                    pd.setMessage("updating profile picture");
-                    showPicturePickDialog();
-                }
-            }
-        });
-        builder.create().show();
-    }
 
-    public void showPostPicturePickDialog() {
-    }
-
-    private void showPostFieldUpdateDialog(Post post) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Update Content");
-
-        LinearLayout linearLayout = new LinearLayout(getActivity());
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setPadding(10, 10, 10, 10);
-        EditText editText = new EditText(getActivity());
-        editText.setText(post.getContent());
-        linearLayout.addView(editText);
-
-        builder.setView(linearLayout);
-
-        // update
-        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String value = editText.getText().toString().trim();
-                if (!TextUtils.isEmpty(value)) {
-                    pd.show();
-                    post.setContent(value);
-                    PostModelStorageFunctions.instance.updatePost(post, () -> {
-                        pd.dismiss();
-                        //navController.navigate(R.id.profileFragment);
-                    });
-                } else {
-                    Toast.makeText(getActivity(), "Please enter Content" , Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        // cancel
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        builder.create().show();
-    }
 
     private void refresh() {
         profileAdapter.notifyDataSetChanged();
@@ -419,7 +357,8 @@ public class ProfileFragment extends PicturePickDialog {
             editBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    showPostFieldUpdateDialog(post);
+                    String postId = post.getUid();
+                    Navigation.findNavController(v).navigate(ProfileFragmentDirections.actionProfileFragmentToEditPostFragment(postId));
                 }
             });
 

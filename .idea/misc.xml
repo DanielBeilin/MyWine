@@ -12,6 +12,7 @@
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/register_activity.xml" value="0.1" />
         <entry key="..\:/Users/Pola/Desktop/MyWine/app/src/main/res/layout/sign_in_activity.xml" value="0.1" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/comment_list_row.xml" value="0.22289766970618036" />
+        <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_edit_post.xml" value="0.46197916666666666" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/fragment_profile.xml" value="0.2793819655521783" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/post_list_profile_row.xml" value="0.46197916666666666" />
         <entry key="..\:/Users/danda/Desktop/MyWine/app/src/main/res/layout/post_list_row.xml" value="0.5" />
@@ -22,7 +23,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_15" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_15_PREVIEW" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
