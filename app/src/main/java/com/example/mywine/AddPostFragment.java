@@ -1,65 +1,35 @@
 package com.example.mywine;
 
-import static com.example.mywine.model.PicturePickDialog.IMAGE_PICK_CAMERA_REQUEST_CODE;
-import static com.example.mywine.model.PicturePickDialog.IMAGE_PICK_GALLERY_REQUEST_CODE;
-
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatTextView;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
-
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.Toast;
 
-import com.example.mywine.model.ModelFirebase;
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+
 import com.example.mywine.model.PicturePickDialog;
 import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.PostModelStorageFunctions;
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.UserModelStorageFunctions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class AddPostFragment extends PicturePickDialog {
@@ -104,13 +74,13 @@ public class AddPostFragment extends PicturePickDialog {
         pd = new ProgressDialog(getContext());
         pd.setCanceledOnTouchOutside(false);
 
-        userId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
+        userId = AddPostFragmentArgs.fromBundle(getArguments()).getUserId();
         setUser(userId);
         navController = NavHostFragment.findNavController(this);
     }
 
     public void setUser(String id) {
-        UserModelStorageFunctions.instance.getUserById(userId, new UserModelStorageFunctions.GetUserById() {
+        UserModelStorageFunctions.instance.getUserById(id, new UserModelStorageFunctions.GetUserById() {
             @Override
             public void onComplete(User user) {
                 if (user != null) {
@@ -164,12 +134,14 @@ public class AddPostFragment extends PicturePickDialog {
         Bitmap postImage = ((BitmapDrawable)imageToUpload.getDrawable()).getBitmap();
         if (postImage == null) {
             PostModelStorageFunctions.instance.addPost(p, () -> {
+                pd.dismiss();
                 navController.navigate(R.id.feedFragment);
             });
         } else {
             PostModelStorageFunctions.instance.uploadPostImage(postImage, UUID.randomUUID().toString() + ".jpg", (url) -> {
                 p.setPhotoUrl(url);
                 PostModelStorageFunctions.instance.addPost(p, () -> {
+                    pd.dismiss();
                     navController.navigate(R.id.feedFragment);
                 });
             });

@@ -6,14 +6,12 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
 
 import com.example.mywine.model.Converters;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,8 +36,6 @@ public class Post {
 
     @TypeConverters(Converters.class)
     ArrayList<String> LikedBy = new ArrayList<String>();
-    @TypeConverters(Converters.class)
-    ArrayList<String> CommentList = new ArrayList<String>();
     Long updateDate = 0L;
 
     public Post() {
@@ -107,14 +103,6 @@ public class Post {
         LikedBy = likedBy;
     }
 
-    public ArrayList<String> getCommentList() {
-        return CommentList;
-    }
-
-    public void setCommentList(ArrayList<String> commentList) {
-        CommentList = commentList;
-    }
-
     public Long getUpdateDate() {
         return updateDate;
     }
@@ -157,11 +145,6 @@ public class Post {
         this.userId = userId;
     }
 
-    public void addComment(String commentID) {
-        this.CommentList.add(commentID);
-    }
-
-
     public Map<String, Object> toJson() {
         Map<String, Object> json = new HashMap<String, Object>();
         json.put("Uid", Uid);
@@ -170,7 +153,6 @@ public class Post {
         json.put("content", content);
         json.put("likeCount", likeCount);
         json.put("updateDate", FieldValue.serverTimestamp());
-        json.put("commentList", TextUtils.join(", ", CommentList));
         json.put("likedBy", TextUtils.join(", ", LikedBy));
         json.put("photoUrl", photoUrl);
         json.put("isDeleted",isDeleted);
@@ -184,8 +166,6 @@ public class Post {
         Integer likeCount =  ((Long) json.get("likeCount")).intValue();
         Timestamp ts = (Timestamp) json.get("updateDate");
         Long updateDate = ts.getSeconds();
-        ArrayList<String> commentList = new ArrayList<String>
-                (Arrays.asList(((String) Objects.requireNonNull(json.get("commentList"))).split(",")));
         ArrayList<String> likedBy = new ArrayList<String>
                 (Arrays.asList(((String) Objects.requireNonNull(json.get("likedBy"))).split(",")));
         String photoUrl = (String) json.get("photoUrl");
@@ -193,11 +173,8 @@ public class Post {
         Post post = new Post(title,userId, content,photoUrl,likeCount,isDeleted);
         post.setUid((String) json.get("Uid"));
         post.setUpdateDate(updateDate);
-        post.setCommentList(commentList);
         post.setLikedBy(likedBy);
         post.setLikeCount(likeCount);
         return post;
     }
-
-
 }

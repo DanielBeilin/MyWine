@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorGrey"
-    tools:context=".MainActivity">
+    tools:context=".AddPostFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 android:scaleType="centerCrop"
                 app:layout_constraintVertical_bias="0.02"
                 app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize8Percent"
-                app:srcCompat="@drawable/avatar" />
+                app:srcCompat="@drawable/ic_baseline_person_24" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/userName"
@@ -37,8 +37,7 @@
                 android:layout_marginStart="46dp"
                 android:layout_marginTop="7dp"
                 android:layout_toEndOf="@+id/userImg"
-                android:text="bla"
-                android:textSize="40dp" />
+                android:textSize="40sp" />
         </RelativeLayout>
 
         <com.google.android.material.textfield.TextInputLayout

@@ -1,37 +1,15 @@
 package com.example.mywine;
 
-import static com.example.mywine.model.PicturePickDialog.IMAGE_PICK_CAMERA_REQUEST_CODE;
-import static com.example.mywine.model.PicturePickDialog.IMAGE_PICK_GALLERY_REQUEST_CODE;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.activity.result.ActivityResult;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,30 +22,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.example.mywine.model.PicturePickDialog;
 import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.PostModelStorageFunctions;
 import com.example.mywine.model.User.User;
 import com.example.mywine.model.UserModelStorageFunctions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
-
-import java.util.HashMap;
 
 public class ProfileFragment extends PicturePickDialog {
 
@@ -75,7 +45,6 @@ public class ProfileFragment extends PicturePickDialog {
     TextView nameTextView, emailTextView;
     MaterialButton editButton;
     ProgressDialog pd;
-    Bitmap imageBitmap;
     String userId;
     User currentUser;
     NavController navController;
@@ -110,21 +79,18 @@ public class ProfileFragment extends PicturePickDialog {
     }
 
     private void setListeners() {
-        onFabClick();
         onAvatarImageClick();
+        onEditButtonClick();
+    }
+
+    private void onEditButtonClick() {
+        editButton.setOnClickListener(view -> {
+            showFieldUpdateDialog("name");
+        });
     }
 
     private void onAvatarImageClick() {
         avatarImage.setOnClickListener(this::showDialog);
-    }
-
-    private void onFabClick() {
-        editButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showEditProfileDialog();
-            }
-        });
     }
 
     private void init(View view) {
@@ -135,7 +101,7 @@ public class ProfileFragment extends PicturePickDialog {
         swipeRefresh = view.findViewById(R.id.profile_fragment_swipe_refresh);
         navController = NavHostFragment.findNavController(this);
         pd = new ProgressDialog(getActivity());
-        userId = UserModelStorageFunctions.instance.getLoggedInUser().getUid();
+        userId = ProfileFragmentArgs.fromBundle(getArguments()).getUserId();
         setUser(userId);
 
         swipeRefresh.setOnRefreshListener(PostModelStorageFunctions.instance::refreshPostList);
@@ -152,8 +118,6 @@ public class ProfileFragment extends PicturePickDialog {
                 Log.d("TAG",profileViewModel.getData().getValue().toString());
                 String stId = profileViewModel.getData().getValue().get(position).getUid();
                 Log.d("TAG",String.format("%s",stId));
-
-                //Navigation.findNavController(v).navigate(StudentListRvFragmentDirections.actionStudentListRvFragmentToStudentDetailsFragment(stId));
             }
         });
 
@@ -171,7 +135,7 @@ public class ProfileFragment extends PicturePickDialog {
     private void initUserDetails() {
         nameTextView.setText(currentUser.getFullName());
         emailTextView.setText(currentUser.getEmail());
-        avatarImage.setImageResource(R.drawable.ic_profile);
+        avatarImage.setImageResource(R.drawable.ic_baseline_person_24);
         String imageUrl = currentUser.getProfilePhoto();
 
         if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -182,7 +146,7 @@ public class ProfileFragment extends PicturePickDialog {
     }
 
     public void setUser(String id) {
-        UserModelStorageFunctions.instance.getUserById(userId, new UserModelStorageFunctions.GetUserById() {
+        UserModelStorageFunctions.instance.getUserById(id, new UserModelStorageFunctions.GetUserById() {
             @Override
             public void onComplete(User user) {
                 if (user != null) {
@@ -191,31 +155,6 @@ public class ProfileFragment extends PicturePickDialog {
                 }
             }
         });
-    }
-
-    private void showEditProfileDialog() {
-        String options[] = {"edit name", "edit profile photo"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Choose Action");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
-                    // edit name
-                    pd.setMessage("updating name");
-                    showFieldUpdateDialog("name");
-                } else if (which == 1) {
-                    // edit profile photo
-                    pd.setMessage("updating profile picture");
-                    showPicturePickDialog();
-                }
-            }
-        });
-        builder.create().show();
-    }
-
-    public void showPicturePickDialog() {
-
     }
 
     private void showFieldUpdateDialog(String field) {
@@ -241,7 +180,7 @@ public class ProfileFragment extends PicturePickDialog {
                     currentUser.setFullName(value);
                     UserModelStorageFunctions.instance.updateUser(currentUser, () -> {
                         pd.dismiss();
-                        navController.navigate(R.id.profileFragment);
+                        navController.navigateUp();
                     });
                 } else {
                     Toast.makeText(getActivity(), "Please enter " + field, Toast.LENGTH_SHORT).show();
@@ -266,7 +205,7 @@ public class ProfileFragment extends PicturePickDialog {
             currentUser.setProfilePhoto(url);
             UserModelStorageFunctions.instance.updateUser(currentUser, () -> {
                 pd.dismiss();
-                navController.navigate(R.id.profileFragment);
+                navController.navigateUp();
             });
         });
     }
@@ -301,7 +240,6 @@ public class ProfileFragment extends PicturePickDialog {
         ImageView postImv;
         TextView contentTv;
         TextView likeCountTv;
-        TextView commentCountTv;
         Button likeBtn;
         Button deleteBtn;
         Button editBtn;
@@ -311,7 +249,6 @@ public class ProfileFragment extends PicturePickDialog {
             postImv = itemView.findViewById(R.id.post_row_post_imgv);
             contentTv = itemView.findViewById(R.id.post_row_content_tv);
             likeCountTv = itemView.findViewById(R.id.post_row_like_count_tv);
-            commentCountTv = itemView.findViewById(R.id.post_comments_count_tv);
             likeBtn = itemView.findViewById(R.id.post_row_like_btn);
             deleteBtn = itemView.findViewById(R.id.post_delete_btn);
             editBtn = itemView.findViewById(R.id.post_edit_btn);
@@ -330,7 +267,6 @@ public class ProfileFragment extends PicturePickDialog {
             contentTv.setText(post.getContent());
             Integer likeNum = post.getLikeCount();
             likeCountTv.setText(likeNum.toString());
-            commentCountTv.setText(String.valueOf(post.getCommentList().size()));
             postImv.setImageResource(R.drawable.avatar);
             if (post.getPhotoUrl() != null) {
                 Picasso.get()
@@ -358,7 +294,7 @@ public class ProfileFragment extends PicturePickDialog {
                 @Override
                 public void onClick(View v) {
                     String postId = post.getUid();
-                    Navigation.findNavController(v).navigate(ProfileFragmentDirections.actionProfileFragmentToEditPostFragment(postId));
+                    navController.navigate(ProfileFragmentDirections.actionProfileFragmentToEditPostFragment(postId));
                 }
             });
 

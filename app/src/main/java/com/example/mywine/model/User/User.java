@@ -7,10 +7,8 @@ import androidx.room.PrimaryKey;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
 
-import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 
