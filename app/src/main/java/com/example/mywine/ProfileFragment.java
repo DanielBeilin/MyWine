@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -243,6 +244,7 @@ public class ProfileFragment extends PicturePickDialog {
         Button likeBtn;
         Button deleteBtn;
         Button editBtn;
+        RatingBar ratingBar;
 
         public ProfileViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
@@ -254,7 +256,7 @@ public class ProfileFragment extends PicturePickDialog {
             editBtn = itemView.findViewById(R.id.post_edit_btn);
             deleteBtn.setVisibility(View.VISIBLE);
             editBtn.setVisibility(View.VISIBLE);
-
+            ratingBar = itemView.findViewById(R.id.ratingBar);
         }
 
 
@@ -268,6 +270,7 @@ public class ProfileFragment extends PicturePickDialog {
             Integer likeNum = post.getLikeCount();
             likeCountTv.setText(likeNum.toString());
             postImv.setImageResource(R.drawable.avatar);
+            ratingBar.setRating(post.getRating());
             if (post.getPhotoUrl() != null) {
                 Picasso.get()
                         .load(post.getPhotoUrl())
