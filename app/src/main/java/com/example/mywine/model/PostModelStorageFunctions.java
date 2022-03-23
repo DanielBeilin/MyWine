@@ -1,23 +1,21 @@
 package com.example.mywine.model;
 
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import androidx.core.os.HandlerCompat;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Transformations;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.core.os.HandlerCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.example.mywine.MyApplication;
 import com.example.mywine.model.Post.Post;
-import com.example.mywine.model.User.User;
+
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class PostModelStorageFunctions {
     public static final PostModelStorageFunctions instance = new PostModelStorageFunctions();

@@ -32,16 +32,6 @@
             app:layout_constraintVertical_bias="0.894"
             tools:ignore="SpeakableTextPresentCheck" />
 
-        <ImageView
-            android:id="@+id/post_row_comment_imgv"
-            android:layout_width="38dp"
-            android:layout_height="50dp"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/view"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/post_comments_count_tv"
-            app:srcCompat="@drawable/comments_icon" />
 
         <ImageView
             android:id="@+id/post_row_post_imgv"
@@ -52,7 +42,7 @@
             app:layout_constraintHorizontal_bias="0.496"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/avatar" />
+            app:srcCompat="@drawable/ic_person_black" />
 
         <TextView
             android:id="@+id/post_row_content_tv"
@@ -77,22 +67,12 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/post_row_like_btn" />
 
-        <TextView
-            android:id="@+id/post_comments_count_tv"
-            android:layout_width="48dp"
-            android:layout_height="46dp"
-            android:text="TextView"
-            app:layout_constraintBottom_toBottomOf="@+id/post_row_comment_imgv"
-            app:layout_constraintEnd_toStartOf="@+id/post_row_comment_imgv"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/post_edit_btn" />
-
         <Button
             android:id="@+id/post_delete_btn"
             android:layout_width="55dp"
             android:layout_height="53dp"
             android:background="@drawable/delete_foreground"
-            app:layout_constraintBottom_toBottomOf="@+id/post_edit_btn"
+            app:layout_constraintBottom_toTopOf="@+id/view"
             app:layout_constraintEnd_toStartOf="@+id/post_edit_btn"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/post_row_like_count_tv" />
@@ -101,11 +81,12 @@
             android:id="@+id/post_edit_btn"
             android:layout_width="50dp"
             android:layout_height="51dp"
+            android:layout_marginStart="16dp"
             android:background="@drawable/edit_foreground"
-            app:layout_constraintBottom_toBottomOf="@+id/post_comments_count_tv"
-            app:layout_constraintEnd_toStartOf="@+id/post_comments_count_tv"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/post_delete_btn" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/post_delete_btn"
+            app:layout_constraintTop_toBottomOf="@+id/post_row_content_tv"
+            app:layout_constraintVertical_bias="0.894" />
 
         <View
             android:id="@+id/view"

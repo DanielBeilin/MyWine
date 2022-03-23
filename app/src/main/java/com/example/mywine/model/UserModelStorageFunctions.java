@@ -11,13 +11,10 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.mywine.MyApplication;
-import com.example.mywine.model.Comment.Comment;
-import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.User.User;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -91,6 +88,10 @@ public class UserModelStorageFunctions {
         });
     }
 
+    public void logout(ModelFirebase.LogoutListener lis) {
+        modelFirebase.logout(lis);
+    }
+
     public interface UploadUserPhotoListener {
         void onComplete(String url);
     }
@@ -105,10 +106,6 @@ public class UserModelStorageFunctions {
 
     public interface saveUserImageListener{
         void onComplete(String url);
-    }
-
-    public void saveUserImage(Bitmap imageBitmap, String uid,String imageName, UserModelStorageFunctions.saveUserImageListener listener ) {
-        modelFirebase.saveUserImage(imageBitmap,uid,imageName,listener);
     }
 
     public void refreshUserList() {

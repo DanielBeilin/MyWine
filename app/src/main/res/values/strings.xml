@@ -7,7 +7,7 @@
     <string name="email_invalid">Email Is Invalid</string>
     <string name="password_invalid">Password Is Invalid</string>
     <string name="login">Login</string>
-    <string name="edit_profile">edit profile</string>
+    <string name="edit_profile">edit name</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -4,21 +4,17 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
-import com.example.mywine.model.Comment.Comment;
 import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.User.User;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -39,7 +35,7 @@ public class ModelFirebase {
     public static final String POSTS_IMAGE_FOLDER = "posts_images/";
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     FirebaseStorage storage = FirebaseStorage.getInstance();
 
     public ModelFirebase() {
@@ -62,16 +58,21 @@ public class ModelFirebase {
         void onComplete(List<Post> list);
     }
 
-    public interface getAllCommentsListener{
-        void onComplete(List<Comment> list);
-    }
-
     public interface SignInOnFailureListener {
         void onComplete(String errorMessage);
     }
 
     public interface SignInOnSuccessListener {
         void onComplete();
+    }
+
+    public interface LogoutListener {
+        void onComplete();
+    }
+
+    public void logout(LogoutListener lis) {
+        mAuth.signOut();
+        lis.onComplete();
     }
 
     public void getAllPosts(Long lastUpdateDate, getAllPostsListener listener){
@@ -109,22 +110,6 @@ public class ModelFirebase {
                     listener.onComplete(list);
                 });
     }
-
-//    public void getAllComments(Long lastUpdateDate, getAllCommentsListener listener){
-//        db.collection("Posts/comments")
-//                .whereGreaterThanOrEqualTo("updateDate",new Timestamp(lastUpdateDate,0))
-//                .get()
-//                .addOnCompleteListener(task -> {
-//                    List<Comment> list = new LinkedList<Comment>();
-//                    if (task.isSuccessful()) {
-//                        for (QueryDocumentSnapshot doc : task.getResult()){
-//                            Comment comment = Comment.create(doc.getData());
-//                            list.add(comment);
-//                        }
-//                    }
-//                    listener.onComplete(list);
-//                });
-//    }
 
     public void getPostById(String postId, PostModelStorageFunctions.GetPostById listener) {
         db.collection(POSTS_COLLECTION_NAME)
@@ -172,41 +157,6 @@ public class ModelFirebase {
                             userName = user.getFullName();
                         }
                         listener.onComplete(userName);
-                    }
-                });
-    }
-    public void getCommentById(String commentId, CommentModelStorageFunctions.GetCommentById listener) {
-        db.collection(Comment.COLLECTION_NAME)
-                .document(commentId)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        Comment comment = null;
-                        if(task.isSuccessful() & task.getResult() != null){
-                            comment = Comment.create(Objects.requireNonNull(task.getResult().getData()));
-                        }
-                        listener.onComplete(comment);
-                    }
-                });
-
-    }
-
-    public void getCommentsByPostId(String postId, CommentModelStorageFunctions.GetCommentsByPostId listener) {
-        db.collection(POSTS_COLLECTION_NAME)
-                .document(postId)
-                .collection("comments")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        List<Comment> commentList = new ArrayList<Comment>();
-                        if (task.isSuccessful() & task.getResult() != null){
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                commentList.add(Comment.create(document.getData()));
-                            }
-                        }
-                        listener.onComplete(commentList);
                     }
                 });
     }
@@ -291,7 +241,7 @@ public class ModelFirebase {
 
     public void addPost(Post post, PostModelStorageFunctions.addPostListener listener) {
         Map<String, Object> json = post.toJson();
-        db.collection(POSTS_COLLECTION_NAME).document(post.getUid())
+        db.collection(POSTS_COLLECTION_NAME).document()
                 .set(json)
                 .addOnSuccessListener(unused -> listener.onComplete())
                 .addOnFailureListener(e -> listener.onComplete());
@@ -311,16 +261,6 @@ public class ModelFirebase {
                 }));
     }
 
-    public void addComment(Comment comment, CommentModelStorageFunctions.addCommentListener listener) {
-        Map<String, Object> json = comment.toJson();
-        db.collection(POSTS_COLLECTION_NAME)
-                .document(comment.getPostId())
-                .collection("comments")
-                .document(comment.getUid()).set(json)
-                .addOnSuccessListener(unused -> listener.onComplete())
-                .addOnFailureListener(e -> listener.onComplete());
-    }
-
     public void uploadUserPhoto(Bitmap imageBmp, String name, UserModelStorageFunctions.UploadUserPhotoListener listener){
         final StorageReference imagesRef = storage.getReference().child(USERS_IMAGE_FOLDER).child(name);
 
@@ -334,49 +274,6 @@ public class ModelFirebase {
                     listener.onComplete(uri.toString());
                 }));
     };
-
-    public void saveUserImage(Bitmap imageBitmap,String uid, String imageName , UserModelStorageFunctions.saveUserImageListener listener ) {
-        StorageReference storageRef = storage.getReference();
-        StorageReference imgRef = storageRef.child(String.format("users_images/%s",imageName));
-
-        ByteArrayOutputStream byteOutPutStream = new ByteArrayOutputStream();
-        imageBitmap.compress(Bitmap.CompressFormat.JPEG,100,byteOutPutStream);
-        byte[] data = byteOutPutStream.toByteArray();
-
-        UploadTask uploadTask = imgRef.putBytes(data);
-        uploadTask.addOnFailureListener(exception -> listener.onComplete(null))
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        imgRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                            listener.onComplete(uri.toString());
-                        });
-                    }
-                });
-
-    }
-
-//    public void savePostImage(Bitmap imageBitmap, String imageName , PostModelStorageFunctions.savePostImageListener listener ) {
-//        StorageReference storageRef = storage.getReference();
-//        StorageReference imgRef = storageRef.child(String.format("post_images/%s",imageName));
-//
-//        ByteArrayOutputStream byteOutPutStream = new ByteArrayOutputStream();
-//        imageBitmap.compress(Bitmap.CompressFormat.JPEG,100,byteOutPutStream);
-//        byte[] data = byteOutPutStream.toByteArray();
-//
-//        UploadTask uploadTask = imgRef.putBytes(data);
-//        uploadTask.addOnFailureListener(exception -> listener.onComplete(null))
-//                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                    @Override
-//                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                        imgRef.getDownloadUrl().addOnSuccessListener(uri -> {
-//                            listener.onComplete(uri.toString());
-//                        });
-//                    }
-//                });
-//    }
-
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     public boolean isSignedIn() {
         FirebaseUser currentUser = mAuth.getCurrentUser();

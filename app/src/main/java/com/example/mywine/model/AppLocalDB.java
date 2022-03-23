@@ -7,8 +7,6 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 import com.example.mywine.MyApplication;
-import com.example.mywine.model.Comment.Comment;
-import com.example.mywine.model.Comment.CommentDao;
 import com.example.mywine.model.Post.Post;
 import com.example.mywine.model.Post.PostDao;
 import com.example.mywine.model.User.User;
