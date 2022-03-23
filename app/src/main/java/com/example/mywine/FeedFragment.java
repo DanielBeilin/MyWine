@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -41,7 +42,7 @@ public class FeedFragment extends Fragment {
     private ProgressDialog pd;
     private FloatingActionButton addNewPostFAB;
     private ImageFilterView logout;
-    private ShapeableImageView profileImage;
+    private ImageFilterView profileImage;
     private NavController navController;
 
     @Override
@@ -92,7 +93,7 @@ public class FeedFragment extends Fragment {
     }
 
     private void setProfileImage() {
-        profileImage.setImageResource(R.drawable.ic_baseline_person_24);
+        profileImage.setImageResource(R.drawable.ic_person_black);
         if (user != null && user.getPhotoUrl() != null) {
             Picasso.get()
                     .load(user.getPhotoUrl())
@@ -161,6 +162,7 @@ public class FeedFragment extends Fragment {
         Button likeBtn;
         Button deleteBtn;
         Button editBtn;
+        RatingBar ratingBar;
 
         public FeedViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
@@ -174,6 +176,7 @@ public class FeedFragment extends Fragment {
             editBtn = itemView.findViewById(R.id.post_edit_btn);
             deleteBtn.setVisibility(View.VISIBLE);
             editBtn.setVisibility(View.VISIBLE);
+            ratingBar = itemView.findViewById(R.id.ratingBar);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -191,6 +194,8 @@ public class FeedFragment extends Fragment {
                     deleteBtn.setVisibility(View.GONE);
                     editBtn.setVisibility(View.GONE);
                 }
+
+                ratingBar.setRating(post.getRating());
                 contentTv.setText(post.getContent());
                 UserModelStorageFunctions.instance.getUserById(post.getUserId(), new UserModelStorageFunctions.GetUserById() {
                     @Override

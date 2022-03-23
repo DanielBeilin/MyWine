@@ -68,6 +68,7 @@ public class AddPostFragment extends PicturePickDialog {
         username = view.findViewById(R.id.userName);
         profilePic = view.findViewById(R.id.userImg);
         imageToUpload = view.findViewById(R.id.imageToUpload);
+        imageToUpload.setImageResource(R.drawable.empty_image);
         uploadButton = view.findViewById(R.id.uploadButton);
         ratingBar = view.findViewById(R.id.ratingBar);
 
@@ -116,20 +117,20 @@ public class AddPostFragment extends PicturePickDialog {
 
                 if (TextUtils.isEmpty(description)) {
                     contentInputLayout.setError("Post Can't be empty");
-                } else if (imageToUpload.getDrawable() == null) {
-                    Toast.makeText(getContext(), "Select an Image", Toast.LENGTH_LONG).show();
+                } else if (imageToUpload.getDrawable() != null) {
+                    uploadPost(description, ratingBar.getRating());
                 } else {
-                    uploadPost(description);
+                    Toast.makeText(getContext(), "Select an Image", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
-    private void uploadPost(String content) {
+    private void uploadPost(String content, Float rating) {
         pd.setMessage("Publishing Post");
         pd.show();
 
-        Post p = new Post(contentEditText.getText().toString());
+        Post p = new Post(content, rating);
         p.setUserId(userId);
         Bitmap postImage = ((BitmapDrawable)imageToUpload.getDrawable()).getBitmap();
         if (postImage == null) {
