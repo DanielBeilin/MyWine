@@ -222,7 +222,9 @@ public class FeedFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         post.addLike(user.getUid());
-                        likeCountTv.setText(String.valueOf(post.getLikeCount()));
+                        PostModelStorageFunctions.instance.updatePost(post,()->{
+                            likeCountTv.setText(String.valueOf(post.getLikeCount()));
+                        });
                     }
                 });
 

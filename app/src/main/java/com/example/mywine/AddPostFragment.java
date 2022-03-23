@@ -130,7 +130,7 @@ public class AddPostFragment extends PicturePickDialog {
         pd.setMessage("Publishing Post");
         pd.show();
 
-        Post p = new Post(content, rating);
+        Post p = new Post(content,rating);
         p.setUserId(userId);
         Bitmap postImage = ((BitmapDrawable)imageToUpload.getDrawable()).getBitmap();
         if (postImage == null) {

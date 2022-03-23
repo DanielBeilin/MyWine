@@ -281,7 +281,9 @@ public class ProfileFragment extends PicturePickDialog {
                 @Override
                 public void onClick(View v) {
                     post.addLike(userId);
-                    likeCountTv.setText(String.valueOf(post.getLikeCount()));
+                    PostModelStorageFunctions.instance.updatePost(post,()-> {
+                        likeCountTv.setText(String.valueOf(post.getLikeCount()));
+                    });
                 }
             });
 

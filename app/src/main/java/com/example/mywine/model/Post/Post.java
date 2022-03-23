@@ -27,7 +27,6 @@ public class Post {
     @PrimaryKey
     @NonNull
     String Uid = "";
-    String title = "";
     String userId = "";
     String content = "";
     String photoUrl = "";
@@ -44,21 +43,37 @@ public class Post {
 
     @Ignore
     public Post(String content, Float rating) {
+        Uid = UUID.randomUUID().toString();
         this.content = content;
         this.photoUrl = null;
         this.rating = rating;
     }
 
-    public Post(String title,
+    public Post(@NonNull String uid,
                 String userId,
                 String content,
                 String photoUrl,
                 Integer likeCount,
                 Boolean isDeleted,
                 Float rating) {
-        this.Uid = UUID.randomUUID().toString();
+        this.Uid = uid;
         this.userId = userId;
-        this.title = title;
+        this.content = content;
+        this.photoUrl = photoUrl;
+        this.likeCount = likeCount;
+        this.isDeleted = isDeleted;
+        this.rating = rating;
+    }
+
+    public Post(
+                String userId,
+                String content,
+                String photoUrl,
+                Integer likeCount,
+                Boolean isDeleted,
+                Float rating) {
+        this.Uid = UUID.randomUUID().toString();;
+        this.userId = userId;
         this.content = content;
         this.photoUrl = photoUrl;
         this.likeCount = likeCount;
@@ -133,14 +148,6 @@ public class Post {
         }
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getUserId() {
         return userId;
     }
@@ -161,11 +168,10 @@ public class Post {
         Map<String, Object> json = new HashMap<String, Object>();
         json.put("Uid", Uid);
         json.put("userId", userId);
-        json.put("title", title);
         json.put("content", content);
         json.put("likeCount", likeCount);
         json.put("updateDate", FieldValue.serverTimestamp());
-        json.put("likedBy", TextUtils.join(", ", LikedBy));
+        json.put("likedBy", TextUtils.join(",", LikedBy));
         json.put("photoUrl", photoUrl);
         json.put("isDeleted", isDeleted);
         json.put("rating", rating);
@@ -174,18 +180,17 @@ public class Post {
 
     public static Post create(Map<String, Object> json) {
         String userId = (String) json.get("userId");
-        String title = (String) json.get("title");
         String content = (String) json.get("content");
         Float rating = Float.valueOf(json.get("rating").toString());
         Integer likeCount =  ((Long) json.get("likeCount")).intValue();
         Timestamp ts = (Timestamp) json.get("updateDate");
         Long updateDate = ts.getSeconds();
         ArrayList<String> likedBy = new ArrayList<String>
-                (Arrays.asList(((String) Objects.requireNonNull(json.get("likedBy"))).split(",")));
+                (Arrays.asList(((String) (json.get("likedBy"))).split(",")));
         String photoUrl = (String) json.get("photoUrl");
         Boolean isDeleted = (Boolean) json.get("isDeleted");
 
-        Post post = new Post(title, userId, content, photoUrl, likeCount, isDeleted, rating);
+        Post post = new Post(userId, content, photoUrl, likeCount, isDeleted, rating);
         post.setUid((String) json.get("Uid"));
         post.setUpdateDate(updateDate);
         post.setLikedBy(likedBy);

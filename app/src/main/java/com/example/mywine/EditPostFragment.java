@@ -31,6 +31,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.squareup.picasso.Picasso;
 
+import java.util.UUID;
+
 public class EditPostFragment extends PicturePickDialog {
     TextInputLayout contentInputLayout;
     TextInputEditText contentEditText;
@@ -118,6 +120,7 @@ public class EditPostFragment extends PicturePickDialog {
     private void initPostDetails() {
         contentEditText.setText(currentPost.getContent());
         imageToUpload.setImageResource(R.drawable.ic_profile);
+        ratingBar.setRating(currentPost.getRating());
         String imageUrl = currentPost.getPhotoUrl();
 
         if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -162,6 +165,7 @@ public class EditPostFragment extends PicturePickDialog {
         pd.setMessage("Publishing Post");
         pd.show();
         currentPost.setContent(content);
+        currentPost.setRating(ratingBar.getRating());
         Bitmap postImage = ((BitmapDrawable)imageToUpload.getDrawable()).getBitmap();
         if (postImage == null) {
             PostModelStorageFunctions.instance.addPost(currentPost, () -> {
@@ -169,7 +173,7 @@ public class EditPostFragment extends PicturePickDialog {
                 navController.navigate(R.id.feedFragment);
             });
         } else {
-            PostModelStorageFunctions.instance.uploadPostImage(postImage, currentPost.getUid() + ".jpg", (url) -> {
+            PostModelStorageFunctions.instance.uploadPostImage(postImage, UUID.randomUUID().toString() + ".jpg", (url) -> {
                 currentPost.setPhotoUrl(url);
                 PostModelStorageFunctions.instance.updatePost(currentPost, () -> {
                     pd.dismiss();
